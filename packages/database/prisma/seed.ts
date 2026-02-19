@@ -1,0 +1,57 @@
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
+
+async function main() {
+  // Admin user
+  const adminUser = await prisma.user.upsert({
+    where: { username: "admin" },
+    update: {},
+    create: { username: "admin", password: "admin" },
+  })
+
+  // Admin role (isAdmin grants all access)
+  const adminRole = await prisma.role.upsert({
+    where: { name: "admin" },
+    update: { isAdmin: true },
+    create: { name: "admin", isAdmin: true },
+  })
+
+  // Assign admin role to admin user
+  await prisma.userRole.upsert({
+    where: { userId_roleId: { userId: adminUser.id, roleId: adminRole.id } },
+    update: {},
+    create: { userId: adminUser.id, roleId: adminRole.id },
+  })
+
+  // Standard roles
+  for (const name of ["readonly", "readwrite"]) {
+    await prisma.role.upsert({ where: { name }, update: {}, create: { name } })
+  }
+
+  // Well-known permissions (glob notation)
+  const wellKnown = [
+    "*.*",           // all permissions
+    "users.manage",  // create / edit / delete users
+    "users.*",       // all user permissions
+    "places.manage", // create / edit / delete places
+    "places.*",      // all place permissions
+    "files.*",       // all file operations
+    "files.read",
+    "files.write",
+    "files.delete",
+  ]
+  for (const name of wellKnown) {
+    await prisma.permission.upsert({ where: { name }, update: {}, create: { name } })
+  }
+
+  console.log("Seeded admin user, roles, and well-known permissions")
+}
+
+main()
+  .then(() => prisma.$disconnect())
+  .catch((e) => {
+    console.error(e)
+    prisma.$disconnect()
+    process.exit(1)
+  })
