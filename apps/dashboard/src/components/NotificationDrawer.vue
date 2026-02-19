@@ -1,0 +1,282 @@
+<script setup lang="ts">
+import { useUploads, type UploadTask } from '../lib/uploads'
+import { useNotifications, type Notification } from '../lib/notifications'
+
+defineProps<{ open: boolean }>()
+defineEmits<{ close: [] }>()
+
+const uploads = useUploads()
+const { notifications, dismiss, dismissAll } = useNotifications()
+
+// ── upload helpers ────────────────────────────────────────────────────────────
+
+function togglePause(task: UploadTask) {
+  if (task.status === 'uploading') uploads.pause(task.id)
+  else if (task.status === 'paused') uploads.resume(task.id)
+}
+
+function progressPct(task: UploadTask): number {
+  if (!task.totalChunks) return 0
+  return Math.round((task.sentChunks / task.totalChunks) * 100)
+}
+
+function uploadStatusLabel(task: UploadTask): string {
+  switch (task.status) {
+    case 'uploading':  return `${progressPct(task)}%`
+    case 'paused':     return 'Paused'
+    case 'done':       return 'Done'
+    case 'error':      return 'Failed'
+    case 'cancelled':  return 'Cancelled'
+  }
+}
+
+function uploadBarColor(status: UploadTask['status']): string {
+  switch (status) {
+    case 'done':      return 'bg-green-500'
+    case 'error':     return 'bg-red-500'
+    case 'cancelled': return 'bg-slate-600'
+    case 'paused':    return 'bg-amber-500'
+    default:          return 'bg-blue-500'
+  }
+}
+
+function uploadStatusColor(status: UploadTask['status']): string {
+  switch (status) {
+    case 'done':      return 'text-green-400'
+    case 'error':     return 'text-red-400'
+    case 'cancelled': return 'text-slate-500'
+    case 'paused':    return 'text-amber-400'
+    default:          return 'text-blue-400'
+  }
+}
+
+// ── notification helpers ──────────────────────────────────────────────────────
+
+function notifIcon(type: Notification['type']): string {
+  switch (type) {
+    case 'success':  return 'M5 13l4 4L19 7'
+    case 'error':    return 'M6 18L18 6M6 6l12 12'
+    case 'info':     return 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+    default:         return 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+  }
+}
+
+function notifIconColor(type: Notification['type']): string {
+  switch (type) {
+    case 'success':  return 'text-green-400'
+    case 'error':    return 'text-red-400'
+    case 'info':     return 'text-blue-400'
+    default:         return 'text-slate-400'
+  }
+}
+
+function notifBorderColor(type: Notification['type']): string {
+  switch (type) {
+    case 'success':  return 'border-green-800/40'
+    case 'error':    return 'border-red-800/40'
+    case 'info':     return 'border-blue-800/40'
+    default:         return 'border-slate-700/50'
+  }
+}
+</script>
+
+<template>
+  <Teleport to="body">
+    <!-- Backdrop -->
+    <Transition name="nd-backdrop">
+      <div
+        v-if="open"
+        class="fixed inset-0 z-40 bg-black/40"
+        @click="$emit('close')"
+      />
+    </Transition>
+
+    <!-- Panel -->
+    <Transition name="nd-panel">
+      <div
+        v-if="open"
+        class="fixed top-0 right-0 h-full w-80 z-50 bg-[#0d0d1f] border-l border-slate-800/60 flex flex-col shadow-2xl"
+      >
+        <!-- Header -->
+        <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-800/60 flex-shrink-0">
+          <span class="text-sm font-semibold text-slate-200">Notifications</span>
+          <button
+            @click="$emit('close')"
+            class="p-1 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Scrollable body -->
+        <div class="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-3">
+
+          <!-- ── Transfers ── -->
+          <section v-if="uploads.tasks.value.length > 0">
+            <div class="text-[10px] uppercase tracking-widest text-slate-600 px-1 mb-2 select-none">Transfers</div>
+            <div class="flex flex-col gap-2">
+              <div
+                v-for="task in uploads.tasks.value"
+                :key="task.id"
+                class="bg-[#12121e] border border-slate-700/50 rounded-xl px-3 py-2.5"
+              >
+                <!-- Name + status -->
+                <div class="flex items-center justify-between gap-2 mb-1.5">
+                  <span class="text-xs text-slate-300 truncate min-w-0" :title="task.name">{{ task.name }}</span>
+                  <span class="text-[10px] shrink-0 tabular-nums font-medium" :class="uploadStatusColor(task.status)">
+                    {{ uploadStatusLabel(task) }}
+                  </span>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="h-1 bg-slate-800 rounded-full overflow-hidden mb-2">
+                  <div
+                    class="h-full rounded-full transition-all duration-300"
+                    :class="uploadBarColor(task.status)"
+                    :style="{ width: progressPct(task) + '%' }"
+                  />
+                </div>
+
+                <!-- Controls -->
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] text-slate-600 tabular-nums">
+                    {{ task.sentChunks }} / {{ task.totalChunks }} chunks
+                  </span>
+
+                  <div
+                    v-if="task.status === 'uploading' || task.status === 'paused'"
+                    class="flex items-center gap-1"
+                  >
+                    <!-- Pause / Resume -->
+                    <button
+                      @click="togglePause(task)"
+                      :title="task.status === 'uploading' ? 'Pause' : 'Resume'"
+                      class="p-1 rounded text-slate-500 hover:text-slate-200 hover:bg-slate-700 transition-colors"
+                    >
+                      <!-- Pause icon -->
+                      <svg v-if="task.status === 'uploading'" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="6" y="4" width="4" height="16" rx="1"/>
+                        <rect x="14" y="4" width="4" height="16" rx="1"/>
+                      </svg>
+                      <!-- Play icon -->
+                      <svg v-else class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </button>
+
+                    <!-- Stop -->
+                    <button
+                      @click="uploads.cancel(task.id)"
+                      title="Cancel upload"
+                      class="p-1 rounded text-slate-500 hover:text-red-400 hover:bg-red-900/30 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="4" y="4" width="16" height="16" rx="2"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Error detail -->
+                  <span v-if="task.error" class="text-[10px] text-red-400 truncate max-w-[140px]" :title="task.error">
+                    {{ task.error }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── Alerts ── -->
+          <section v-if="notifications.length > 0">
+            <div class="text-[10px] uppercase tracking-widest text-slate-600 px-1 mb-2 select-none">Alerts</div>
+            <div class="flex flex-col gap-2">
+              <div
+                v-for="n in notifications"
+                :key="n.id"
+                class="bg-[#111120] border rounded-xl px-3 py-2.5 flex items-start gap-2.5"
+                :class="notifBorderColor(n.type)"
+              >
+                <!-- Icon -->
+                <div class="shrink-0 mt-0.5" :class="notifIconColor(n.type)">
+                  <!-- Spinner for progress -->
+                  <svg v-if="n.type === 'progress'" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" :d="notifIcon(n.type)"/>
+                  </svg>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-slate-200 leading-snug">{{ n.title }}</p>
+                  <p v-if="n.detail" class="text-[10px] text-slate-500 mt-0.5 leading-snug truncate">{{ n.detail }}</p>
+                  <!-- Progress bar -->
+                  <div v-if="n.progress != null && n.progress >= 0" class="h-0.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
+                    <div class="h-full bg-blue-500 rounded-full transition-all duration-200" :style="{ width: n.progress + '%' }"/>
+                  </div>
+                </div>
+
+                <!-- Dismiss -->
+                <button
+                  @click="dismiss(n.id)"
+                  class="shrink-0 p-0.5 rounded text-slate-600 hover:text-slate-300 transition-colors"
+                >
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Empty state -->
+          <div
+            v-if="uploads.tasks.value.length === 0 && notifications.length === 0"
+            class="flex-1 flex flex-col items-center justify-center gap-2 text-slate-700 select-none py-12"
+          >
+            <svg class="w-8 h-8 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.25">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <p class="text-sm">All clear</p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div
+          v-if="notifications.length > 0"
+          class="px-4 py-3 border-t border-slate-800/60 flex-shrink-0"
+        >
+          <button
+            @click="dismissAll()"
+            class="text-xs text-slate-600 hover:text-slate-400 transition-colors"
+          >
+            Clear all alerts
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+</template>
+
+<style scoped>
+.nd-backdrop-enter-active,
+.nd-backdrop-leave-active {
+  transition: opacity 0.2s ease;
+}
+.nd-backdrop-enter-from,
+.nd-backdrop-leave-to {
+  opacity: 0;
+}
+
+.nd-panel-enter-active,
+.nd-panel-leave-active {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nd-panel-enter-from,
+.nd-panel-leave-to {
+  transform: translateX(100%);
+}
+</style>

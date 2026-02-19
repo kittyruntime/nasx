@@ -1,0 +1,10 @@
+model Job {
+  id        String   @id @default(uuid())
+  status    String   // pending | running | completed | failed
+  action    String   // fs.mkdir | fs.copy | etc.
+  result    String?  // JSON encoded result payload
+  error     String?
+  userId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

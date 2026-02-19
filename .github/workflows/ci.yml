@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/root-worker/go.mod
+          cache: false
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build nasx-root-worker
+        run: |
+          cd apps/root-worker
+          go build -o nasx-root-worker .
+
+      - name: Generate Prisma client
+        run: cd packages/database && npx prisma generate
+
+      - name: Build backend
+        run: |
+          cd apps/backend
+          pnpm dlx esbuild src/server.ts \
+            --bundle \
+            --platform=node \
+            --target=node18 \
+            --format=esm \
+            --outfile=dist/server.js \
+            --external:@prisma/client \
+            --external:@prisma/engines \
+            --external:fsevents \
+            --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);" \
+            --log-level=warning
+
+      - name: Build dashboard
+        run: pnpm --filter @nasx/dashboard run build

@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (ex: v1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/root-worker/go.mod
+          cache: false
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma client
+        run: cd packages/database && npx prisma generate
+
+      - name: Build nasx-root-worker (linux/amd64)
+        run: |
+          cd apps/root-worker
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o nasx-root-worker .
+
+      - name: Build backend
+        run: |
+          cd apps/backend
+          pnpm dlx esbuild src/server.ts \
+            --bundle \
+            --platform=node \
+            --target=node18 \
+            --format=esm \
+            --outfile=dist/server.js \
+            --external:@prisma/client \
+            --external:@prisma/engines \
+            --external:fsevents \
+            --banner:js="import { createRequire } from 'module'; const require = createRequire(import.meta.url);" \
+            --log-level=warning
+
+      - name: Build dashboard
+        run: |
+          echo "VITE_API_URL=/trpc" > apps/dashboard/.env.production
+          pnpm --filter @nasx/dashboard run build
+
+      - name: Package release
+        run: |
+          VERSION="${{ github.event.inputs.version || github.ref_name }}"
+          ARCHIVE="nasx-${VERSION}-linux-amd64.tar.gz"
+
+          tar -czf "$ARCHIVE" \
+            --transform "s|^apps/backend/dist/server\.js$|server.js|" \
+            --transform "s|^apps/dashboard/dist|public|" \
+            --transform "s|^apps/root-worker/nasx-root-worker$|bin/nasx-root-worker|" \
+            --transform "s|^packages/database|database|" \
+            --transform "s|^|nasx-${VERSION}/|" \
+            apps/root-worker/nasx-root-worker \
+            apps/backend/dist/server.js \
+            apps/dashboard/dist \
+            packages/database/package.json \
+            packages/database/prisma \
+            packages/database/src \
+            package.json \
+            pnpm-lock.yaml \
+            pnpm-workspace.yaml \
+            scripts/install-release.sh
+
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ARCHIVE }}
+          generate_release_notes: true

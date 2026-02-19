@@ -1,0 +1,9 @@
+model Place {
+  id              String                @id @default(uuid())
+  name            String
+  path            String                @unique
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  rolePermissions RolePlacePermission[] @relation("RolePerms")
+  userPermissions UserPlacePermission[] @relation("UserPerms")
+}
