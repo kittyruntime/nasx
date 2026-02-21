@@ -194,7 +194,7 @@ async function uploadFiles(files: FileList | File[]) {
     const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE))
     const ac = new AbortController()
 
-    uploads.register({ id, name: file.name, destDir: dest, totalChunks, sentChunks: 0, status: 'uploading' })
+    uploads.register({ id, name: file.name, destDir: dest, totalChunks, sentChunks: 0, totalBytes: file.size, sentBytes: 0, bytesPerSec: 0, status: 'uploading' })
     uploads.setAbortController(id, ac)
 
     try {
@@ -221,7 +221,8 @@ async function uploadFiles(files: FileList | File[]) {
           body: file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE),
         })
         if (!resp.ok) throw new Error(await resp.text())
-        uploads.updateProgress(id, i + 1)
+        const chunkBytes = Math.min(CHUNK_SIZE, file.size - i * CHUNK_SIZE)
+        uploads.updateProgress(id, i + 1, chunkBytes)
       }
 
       uploads.setStatus(id, 'done')

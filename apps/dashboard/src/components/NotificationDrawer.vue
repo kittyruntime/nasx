@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useUploads, type UploadTask } from '../lib/uploads'
 import { useNotifications, type Notification } from '../lib/notifications'
 
@@ -7,6 +8,20 @@ defineEmits<{ close: [] }>()
 
 const uploads = useUploads()
 const { notifications, dismiss, dismissAll } = useNotifications()
+
+// ── stat mode toggle (shared across all tasks) ────────────────────────────────
+
+const statMode = ref<'throughput' | 'chunks'>('throughput')
+function toggleStatMode() {
+  statMode.value = statMode.value === 'throughput' ? 'chunks' : 'throughput'
+}
+
+function formatThroughput(bps: number): string {
+  if (bps <= 0)          return '—'
+  if (bps >= 1_048_576)  return `${(bps / 1_048_576).toFixed(1)} MB/s`
+  if (bps >= 1_024)      return `${(bps / 1_024).toFixed(1)} KB/s`
+  return `${Math.round(bps)} B/s`
+}
 
 // ── upload helpers ────────────────────────────────────────────────────────────
 
@@ -141,7 +156,21 @@ function notifBorderColor(type: Notification['type']): string {
 
                 <!-- Controls -->
                 <div class="flex items-center justify-between">
-                  <span class="text-[10px] text-slate-600 tabular-nums">
+                  <!-- Clickable stat: throughput ↔ chunks -->
+                  <button
+                    v-if="task.status === 'uploading' || task.status === 'paused'"
+                    @click.stop="toggleStatMode()"
+                    :title="statMode === 'throughput' ? 'Switch to chunks' : 'Switch to throughput'"
+                    class="text-[10px] tabular-nums text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                  >
+                    <template v-if="statMode === 'throughput' && task.status === 'uploading'">
+                      {{ formatThroughput(task.bytesPerSec) }}
+                    </template>
+                    <template v-else>
+                      {{ task.sentChunks }} / {{ task.totalChunks }} chunks
+                    </template>
+                  </button>
+                  <span v-else class="text-[10px] text-slate-600 tabular-nums">
                     {{ task.sentChunks }} / {{ task.totalChunks }} chunks
                   </span>
 
