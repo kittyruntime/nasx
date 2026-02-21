@@ -5,25 +5,28 @@ import { useAuth } from '../lib/auth'
 import { useUploads } from '../lib/uploads'
 import { useNotifications } from '../lib/notifications'
 import SettingsPanel from '../components/SettingsPanel.vue'
-import FileBrowserPanel from '../components/FileBrowserPanel.vue'
+import FileBrowserPanel from '../components/file-browser/FileBrowserPanel.vue'
 import NotificationsContainer from '../components/NotificationsContainer.vue'
-import NotificationDrawer from '../components/NotificationDrawer.vue'
+import NotificationMenu from '../components/NotificationMenu.vue'
 
 const router = useRouter()
 const { currentUsername, isAdmin, logout } = useAuth()
 const uploads = useUploads()
 const { notifications } = useNotifications()
 
-const activeApp = ref<string>('settings')
-const drawerOpen = ref(false)
-const userMenuOpen = ref(false)
+const activeApp      = ref<string>('settings')
+const notifMenuOpen  = ref(false)
+const userMenuOpen   = ref(false)
 
 const badgeCount = computed(() =>
   uploads.tasks.value.filter(t => t.status === 'uploading' || t.status === 'paused').length
   + notifications.value.length
 )
-const avatarRef = ref<HTMLButtonElement | null>(null)
-const dropdownPos = ref({ bottom: 16, left: 72 })
+
+const bellRef         = ref<HTMLButtonElement | null>(null)
+const notifMenuAnchor = ref<{ top: number; left: number } | null>(null)
+const avatarRef       = ref<HTMLButtonElement | null>(null)
+const dropdownPos     = ref({ bottom: 16, left: 72 })
 
 const initials = computed(() =>
   (currentUsername.value ?? 'U').slice(0, 2).toUpperCase()
@@ -38,10 +41,23 @@ const activeAppLabel = computed(() => {
 function selectApp(id: string) {
   activeApp.value = id
   userMenuOpen.value = false
+  notifMenuOpen.value = false
 }
 
 function isActive(id: string) {
   return activeApp.value === id
+}
+
+function toggleNotifMenu() {
+  if (!notifMenuOpen.value && bellRef.value) {
+    const rect = bellRef.value.getBoundingClientRect()
+    notifMenuAnchor.value = {
+      top:  rect.top,
+      left: rect.right + 8,
+    }
+  }
+  notifMenuOpen.value = !notifMenuOpen.value
+  userMenuOpen.value = false
 }
 
 function toggleUserMenu() {
@@ -49,10 +65,11 @@ function toggleUserMenu() {
     const rect = avatarRef.value.getBoundingClientRect()
     dropdownPos.value = {
       bottom: window.innerHeight - rect.bottom,
-      left: rect.right + 8,
+      left:   rect.right + 8,
     }
   }
   userMenuOpen.value = !userMenuOpen.value
+  notifMenuOpen.value = false
 }
 
 function handleLogout() {
@@ -60,12 +77,13 @@ function handleLogout() {
   router.push('/login')
 }
 
-function closeMenu() {
+function closeMenus() {
   userMenuOpen.value = false
+  notifMenuOpen.value = false
 }
 
-onMounted(() => document.addEventListener('click', closeMenu))
-onUnmounted(() => document.removeEventListener('click', closeMenu))
+onMounted(() => document.addEventListener('click', closeMenus))
+onUnmounted(() => document.removeEventListener('click', closeMenus))
 </script>
 
 <template>
@@ -81,7 +99,7 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
 
       <div class="w-8 border-t border-slate-800 mb-3" />
 
-      <!-- App icons -->
+      <!-- App nav -->
       <nav class="flex flex-col items-stretch gap-1 flex-1 w-full">
 
         <!-- Files -->
@@ -131,7 +149,26 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
 
       </nav>
 
-      <!-- User avatar at bottom with dropdown trigger -->
+      <!-- Notifications bell -->
+      <button
+        ref="bellRef"
+        @click.stop="toggleNotifMenu"
+        title="Activity"
+        class="relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 mb-2"
+        :class="notifMenuOpen
+          ? 'bg-blue-600/15 text-blue-400'
+          : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-200'"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <span
+          v-if="badgeCount > 0"
+          class="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 bg-blue-500 rounded-full text-[8px] font-bold text-white flex items-center justify-center tabular-nums leading-none"
+        >{{ badgeCount > 9 ? '9+' : badgeCount }}</span>
+      </button>
+
+      <!-- User avatar -->
       <button
         ref="avatarRef"
         @click.stop="toggleUserMenu"
@@ -146,7 +183,7 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
       </button>
     </aside>
 
-    <!-- User dropdown (rendered in body via Teleport) -->
+    <!-- User dropdown -->
     <Teleport to="body">
       <Transition name="menu">
         <div
@@ -159,7 +196,6 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
             minWidth: '200px',
           }"
         >
-          <!-- User header -->
           <div class="flex items-center gap-3 px-4 py-3.5 border-b border-slate-800">
             <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {{ initials }}
@@ -169,7 +205,6 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
               <div class="text-slate-500 text-xs">{{ isAdmin ? 'Administrator' : 'User' }}</div>
             </div>
           </div>
-          <!-- Actions -->
           <div class="p-1.5">
             <button
               @click="handleLogout"
@@ -192,21 +227,6 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
       <!-- Top bar -->
       <header class="h-11 flex items-center px-6 border-b border-slate-800/50 flex-shrink-0 bg-[#0a0a14]/60 backdrop-blur-sm">
         <span class="text-sm font-medium text-slate-300">{{ activeAppLabel }}</span>
-        <div class="flex-1" />
-        <!-- Bell button -->
-        <button
-          @click="drawerOpen = true"
-          title="Notifications"
-          class="relative p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-        >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-          </svg>
-          <span
-            v-if="badgeCount > 0"
-            class="absolute top-1 right-1 min-w-[14px] h-3.5 px-0.5 bg-blue-500 rounded-full text-[8px] font-bold text-white flex items-center justify-center tabular-nums leading-none"
-          >{{ badgeCount > 9 ? '9+' : badgeCount }}</span>
-        </button>
       </header>
 
       <!-- Content -->
@@ -227,7 +247,11 @@ onUnmounted(() => document.removeEventListener('click', closeMenu))
   </div>
 
   <NotificationsContainer />
-  <NotificationDrawer :open="drawerOpen" @close="drawerOpen = false" />
+  <NotificationMenu
+    :open="notifMenuOpen"
+    :anchor-rect="notifMenuAnchor"
+    @close="notifMenuOpen = false"
+  />
 </template>
 
 <style scoped>
