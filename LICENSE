@@ -1,0 +1,33 @@
+NASX Software License
+Copyright (c) 2025 kittyruntime
+
+TERMS AND CONDITIONS
+
+1. INDIVIDUAL USE
+   This software is free to use, copy, modify, and self-host for personal,
+   non-commercial purposes by private individuals at no cost and without
+   prior permission.
+
+2. COMPANY AND ORGANISATIONAL USE
+   Any use by a company, organisation, government body, or other legal entity
+   — including internal tools, intranet deployments, or employee-facing
+   services — requires prior written permission from the copyright holder.
+
+3. COMMERCIAL USE
+   Commercial use of any kind is strictly prohibited without a separate written
+   agreement with the copyright holder. Commercial use includes, but is not
+   limited to:
+   - Offering NASX or a derivative as a hosted or managed service (SaaS)
+   - Bundling NASX with a commercial product or service
+   - Using NASX to directly or indirectly generate revenue
+
+4. REDISTRIBUTION
+   Redistribution of the source code or binaries, with or without modification,
+   is permitted provided that this license and copyright notice are preserved
+   and that no commercial use as defined in section 3 is made.
+
+5. NO WARRANTY
+   THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+   DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THIS SOFTWARE.
+
