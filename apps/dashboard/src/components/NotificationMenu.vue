@@ -3,11 +3,7 @@ import { ref } from 'vue'
 import { useUploads, type UploadTask } from '../lib/uploads'
 import { useNotifications, type Notification } from '../lib/notifications'
 
-defineProps<{
-  open: boolean
-  anchorRect: { top: number; left: number } | null
-}>()
-
+defineProps<{ open: boolean; pos: { bottom: number; left: number } }>()
 defineEmits<{ close: [] }>()
 
 const uploads = useUploads()
@@ -98,16 +94,24 @@ function notifBorderColor(type: Notification['type']): string {
 
 <template>
   <Teleport to="body">
+    <!-- Backdrop transparent pour fermer au clic extérieur -->
+    <div
+      v-if="open"
+      class="fixed inset-0 z-40"
+      @click="$emit('close')"
+    />
+
+    <!-- Panel -->
     <Transition name="nm">
       <div
-        v-if="open && anchorRect"
-        @click.stop
+        v-if="open"
         class="fixed z-50 w-80 bg-[#0d0d1f] border border-slate-700/60 rounded-xl shadow-2xl flex flex-col overflow-hidden"
         :style="{
-          top: Math.min(anchorRect.top, window.innerHeight - 500) + 'px',
-          left: anchorRect.left + 'px',
+          bottom: pos.bottom + 'px',
+          left:   pos.left + 'px',
           maxHeight: '500px',
         }"
+        @click.stop
       >
         <!-- Header -->
         <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800/60 flex-shrink-0">
@@ -134,15 +138,12 @@ function notifBorderColor(type: Notification['type']): string {
                 :key="task.id"
                 class="bg-[#12121e] border border-slate-700/50 rounded-xl px-3 py-2.5"
               >
-                <!-- Name + status -->
                 <div class="flex items-center justify-between gap-2 mb-1.5">
                   <span class="text-xs text-slate-300 truncate min-w-0" :title="task.name">{{ task.name }}</span>
                   <span class="text-[10px] shrink-0 tabular-nums font-medium" :class="uploadStatusColor(task.status)">
                     {{ uploadStatusLabel(task) }}
                   </span>
                 </div>
-
-                <!-- Progress bar -->
                 <div class="h-1 bg-slate-800 rounded-full overflow-hidden mb-2">
                   <div
                     class="h-full rounded-full transition-all duration-300"
@@ -150,8 +151,6 @@ function notifBorderColor(type: Notification['type']): string {
                     :style="{ width: progressPct(task) + '%' }"
                   />
                 </div>
-
-                <!-- Controls -->
                 <div class="flex items-center justify-between">
                   <button
                     v-if="task.status === 'uploading' || task.status === 'paused'"

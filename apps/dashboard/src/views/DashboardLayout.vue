@@ -23,10 +23,10 @@ const badgeCount = computed(() =>
   + notifications.value.length
 )
 
-const bellRef         = ref<HTMLButtonElement | null>(null)
-const notifMenuAnchor = ref<{ top: number; left: number } | null>(null)
-const avatarRef       = ref<HTMLButtonElement | null>(null)
-const dropdownPos     = ref({ bottom: 16, left: 72 })
+const bellRef     = ref<HTMLButtonElement | null>(null)
+const notifPos    = ref({ bottom: 16, left: 72 })
+const avatarRef   = ref<HTMLButtonElement | null>(null)
+const dropdownPos = ref({ bottom: 16, left: 72 })
 
 const initials = computed(() =>
   (currentUsername.value ?? 'U').slice(0, 2).toUpperCase()
@@ -49,11 +49,11 @@ function isActive(id: string) {
 }
 
 function toggleNotifMenu() {
-  if (!notifMenuOpen.value && bellRef.value) {
+  if (bellRef.value) {
     const rect = bellRef.value.getBoundingClientRect()
-    notifMenuAnchor.value = {
-      top:  rect.top,
-      left: rect.right + 8,
+    notifPos.value = {
+      bottom: window.innerHeight - rect.bottom,
+      left:   rect.right + 8,
     }
   }
   notifMenuOpen.value = !notifMenuOpen.value
@@ -77,13 +77,12 @@ function handleLogout() {
   router.push('/login')
 }
 
-function closeMenus() {
+function closeUserMenu() {
   userMenuOpen.value = false
-  notifMenuOpen.value = false
 }
 
-onMounted(() => document.addEventListener('click', closeMenus))
-onUnmounted(() => document.removeEventListener('click', closeMenus))
+onMounted(() => document.addEventListener('click', closeUserMenu))
+onUnmounted(() => document.removeEventListener('click', closeUserMenu))
 </script>
 
 <template>
@@ -152,7 +151,7 @@ onUnmounted(() => document.removeEventListener('click', closeMenus))
       <!-- Notifications bell -->
       <button
         ref="bellRef"
-        @click.stop="toggleNotifMenu"
+        @click="toggleNotifMenu"
         title="Activity"
         class="relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 mb-2"
         :class="notifMenuOpen
@@ -171,7 +170,7 @@ onUnmounted(() => document.removeEventListener('click', closeMenus))
       <!-- User avatar -->
       <button
         ref="avatarRef"
-        @click.stop="toggleUserMenu"
+        @click="toggleUserMenu"
         title="Account"
         class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center
                justify-center text-white text-xs font-bold select-none transition-all duration-150"
@@ -249,7 +248,7 @@ onUnmounted(() => document.removeEventListener('click', closeMenus))
   <NotificationsContainer />
   <NotificationMenu
     :open="notifMenuOpen"
-    :anchor-rect="notifMenuAnchor"
+    :pos="notifPos"
     @close="notifMenuOpen = false"
   />
 </template>
