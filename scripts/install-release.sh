@@ -522,11 +522,9 @@ echo ""
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
 if [[ "$SKIP_NGINX" != "1" ]] && command -v nginx &>/dev/null; then
-  echo -e "  ${BOLD}Dashboard:${NC}  http://$SERVER_IP"
-  echo -e "  ${BOLD}API:${NC}        http://$SERVER_IP/trpc"
+  echo -e "  ${BOLD}Access NASX:${NC}  http://$SERVER_IP"
 else
-  echo -e "  ${BOLD}Dashboard:${NC}  ${YELLOW}(serve $INSTALL_DIR/public/ with a web server)${NC}"
-  echo -e "  ${BOLD}API:${NC}        http://$SERVER_IP:$BACKEND_PORT/trpc"
+  echo -e "  ${BOLD}Access NASX:${NC}  http://$SERVER_IP:$BACKEND_PORT"
 fi
 
 echo ""
