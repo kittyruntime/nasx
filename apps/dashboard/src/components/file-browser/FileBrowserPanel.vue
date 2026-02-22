@@ -290,7 +290,7 @@ async function uploadFiles(files: FileList | File[]) {
       }
 
       uploads.setStatus(id, 'done')
-      refresh()
+      if (currentPath.value === dest) refresh()
       setTimeout(() => uploads.remove(id), 3000)
     } catch (e: any) {
       const isAbort = e instanceof DOMException && e.name === 'AbortError'
@@ -361,6 +361,7 @@ onMounted(async () => {
         @create-folder="createFolder"
         @upload-click="fileInput?.click()"
         @paste="doPaste"
+        @refresh="refresh"
         @update:view-mode="viewMode = $event"
       />
 
