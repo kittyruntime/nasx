@@ -1,11 +1,15 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
+import bcrypt from "bcryptjs"
 import { router, publicProcedure } from "../index"
 import { signToken, hasPermission } from "../auth"
 
 export const authRouter = router({
   login: publicProcedure
-    .input(z.object({ username: z.string(), password: z.string() }))
+    .input(z.object({
+      username: z.string().min(1).max(64),
+      password: z.string().min(1).max(128),
+    }))
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findUnique({
         where: { username: input.username },
@@ -25,7 +29,7 @@ export const authRouter = router({
         },
       })
 
-      if (!user || user.password !== input.password) {
+      if (!user || !(await bcrypt.compare(input.password, user.password))) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" })
       }
 

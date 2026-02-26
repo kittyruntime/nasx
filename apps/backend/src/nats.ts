@@ -94,7 +94,12 @@ export async function requestSync<T>(
   timeout = 10_000,
 ): Promise<T> {
   const msg = await nc.request(subject, sc.encode(JSON.stringify(payload)), { timeout })
-  const resp = JSON.parse(sc.decode(msg.data)) as WorkerResponse<T>
+  let resp: WorkerResponse<T>
+  try {
+    resp = JSON.parse(sc.decode(msg.data)) as WorkerResponse<T>
+  } catch {
+    throw new Error("Invalid worker response")
+  }
   if (!resp.ok) {
     throw Object.assign(new Error(resp.error), { code: resp.code })
   }
@@ -137,7 +142,12 @@ export async function writeChunk(opts: {
     opts.data,
     { headers: h, timeout },
   )
-  const resp = JSON.parse(sc.decode(msg.data)) as { ok: boolean; error?: string; code?: string }
+  let resp: { ok: boolean; error?: string; code?: string }
+  try {
+    resp = JSON.parse(sc.decode(msg.data)) as { ok: boolean; error?: string; code?: string }
+  } catch {
+    throw new Error("Invalid worker response")
+  }
   if (!resp.ok) {
     throw Object.assign(new Error(resp.error ?? "write-chunk failed"), { code: resp.code })
   }
@@ -152,24 +162,32 @@ type JobEvent = {
   error?:  string
 }
 
-export function startEventSubscriber(): void {
+export async function startEventSubscriber(): Promise<void> {
   const sub = nc.subscribe("nasx.events.job.*")
 
-  ;(async () => {
-    for await (const msg of sub) {
+  for await (const msg of sub) {
+    try {
+      let event: JobEvent
       try {
-        const event = JSON.parse(sc.decode(msg.data)) as JobEvent
-        await prisma.job.update({
-          where: { id: event.jobId },
-          data: {
-            status: event.status,
-            result: event.result != null ? JSON.stringify(event.result) : null,
-            error:  event.error  ?? null,
-          },
-        })
-      } catch (e) {
-        console.error("[nats] event subscriber error:", e)
+        event = JSON.parse(sc.decode(msg.data)) as JobEvent
+      } catch {
+        console.error("[nats] event subscriber: invalid JSON in message, skipping")
+        continue
       }
+      if (!event.jobId) {
+        console.error("[nats] event subscriber: missing jobId, skipping")
+        continue
+      }
+      await prisma.job.update({
+        where: { id: event.jobId },
+        data: {
+          status: event.status,
+          result: event.result != null ? JSON.stringify(event.result) : null,
+          error:  event.error  ?? null,
+        },
+      })
+    } catch (e) {
+      console.error("[nats] event subscriber error:", e)
     }
-  })()
+  }
 }

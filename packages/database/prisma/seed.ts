@@ -1,13 +1,15 @@
 import { PrismaClient } from "@prisma/client"
+import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
 async function main() {
-  // Admin user
+  // Admin user — always ensure the password is hashed
+  const hashedPassword = await bcrypt.hash("admin", 12)
   const adminUser = await prisma.user.upsert({
     where: { username: "admin" },
-    update: {},
-    create: { username: "admin", password: "admin" },
+    update: { password: hashedPassword },
+    create: { username: "admin", password: hashedPassword },
   })
 
   // Admin role (isAdmin grants all access)

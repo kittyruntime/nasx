@@ -14,7 +14,8 @@
     "db:push": "prisma db push"
   },
   "dependencies": {
-    "@prisma/client": "^6.9.0"
+    "@prisma/client": "^6.9.0",
+    "bcryptjs": "^2.4.3"
   },
   "prisma": {
     "schema": "prisma/schema",

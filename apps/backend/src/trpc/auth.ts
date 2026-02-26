@@ -1,5 +1,12 @@
 import jwt from "jsonwebtoken"
 
+if (!process.env.JWT_SECRET) {
+  console.warn(
+    "[security] JWT_SECRET is not set — using insecure default. " +
+    "Set JWT_SECRET in your environment before deploying to production.",
+  )
+}
+
 export const JWT_SECRET = process.env.JWT_SECRET ?? "nasx-dev-secret"
 
 export interface TokenPayload {

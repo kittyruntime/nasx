@@ -12,7 +12,7 @@ export const tasksRouter = router({
         id:     job.id,
         status: job.status as "pending" | "running" | "completed" | "failed",
         action: job.action,
-        result: job.result ? JSON.parse(job.result) : null,
+        result: job.result ? (() => { try { return JSON.parse(job.result!) } catch { return null } })() : null,
         error:  job.error ?? null,
       }
     }),

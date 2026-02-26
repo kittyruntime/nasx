@@ -2,6 +2,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import Fastify from "fastify"
 import cors from "@fastify/cors"
+import rateLimit from "@fastify/rate-limit"
 import fastifyStatic from "@fastify/static"
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify"
 
@@ -23,7 +24,32 @@ export function buildApp() {
         bodyLimit: 50 * 1024 * 1024, // 50 MB — covers 2 MB chunks with headroom
     })
 
-    app.register(cors)
+    // Disable cross-origin requests — the frontend is served from the same origin.
+    app.register(cors, { origin: false })
+
+    // Global rate limit: 200 req/min per IP.
+    app.register(rateLimit, { max: 200, timeWindow: "1 minute" })
+
+    // Stricter rate limit on the login endpoint: 20 req/min per IP.
+    // Implemented via a simple in-memory sliding-window counter keyed by IP.
+    const loginAttempts = new Map<string, { count: number; resetAt: number }>()
+    const LOGIN_MAX  = 20
+    const LOGIN_WINDOW_MS = 60_000
+
+    app.addHook("onRequest", async (req, reply) => {
+        if (!req.url.startsWith("/trpc/auth.login")) return
+        const now = Date.now()
+        const key = req.ip
+        let entry = loginAttempts.get(key)
+        if (!entry || now >= entry.resetAt) {
+            entry = { count: 0, resetAt: now + LOGIN_WINDOW_MS }
+            loginAttempts.set(key, entry)
+        }
+        entry.count++
+        if (entry.count > LOGIN_MAX) {
+            reply.status(429).send({ message: "Too many login attempts. Try again later." })
+        }
+    })
 
     app.register(healthRoutes)
     app.register(fileRoutes)

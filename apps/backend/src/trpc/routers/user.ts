@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
+import bcrypt from "bcryptjs"
 import { router, protectedProcedure, userManagerProcedure } from "../index"
 
 const userSelect = {
@@ -44,12 +45,14 @@ export const userRouter = router({
       const existing = await ctx.prisma.user.findUnique({ where: { username: input.username } })
       if (existing) throw new TRPCError({ code: "CONFLICT", message: "Username already taken" })
 
+      const hashedPassword = await bcrypt.hash(input.password, 12)
+
       // Create user + personal role in one transaction
       return ctx.prisma.$transaction(async tx => {
         const user = await tx.user.create({
           data: {
             username: input.username,
-            password: input.password,
+            password: hashedPassword,
             displayName: input.displayName ?? null,
           },
           select: userSelect,
@@ -109,11 +112,12 @@ export const userRouter = router({
         where: { id: ctx.user.userId },
         select: { password: true },
       })
-      if (user.password !== input.currentPassword)
+      if (!(await bcrypt.compare(input.currentPassword, user.password)))
         throw new TRPCError({ code: "FORBIDDEN", message: "Current password is incorrect" })
+      const newHashed = await bcrypt.hash(input.newPassword, 12)
       return ctx.prisma.user.update({
         where: { id: ctx.user.userId },
-        data: { password: input.newPassword },
+        data: { password: newHashed },
         select: { id: true, username: true },
       })
     }),

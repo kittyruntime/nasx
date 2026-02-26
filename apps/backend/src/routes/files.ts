@@ -128,7 +128,8 @@ export async function fileRoutes(app: FastifyInstance) {
     const uploadId    = req.headers["x-upload-id"]    as string
     const chunkIndex  = parseInt(req.headers["x-chunk-index"]  as string, 10)
     const totalChunks = parseInt(req.headers["x-total-chunks"] as string, 10)
-    const fileName    = decodeURIComponent(req.headers["x-file-name"] as string ?? "")
+    const rawFileName = decodeURIComponent(req.headers["x-file-name"] as string ?? "")
+    const fileName    = basename(rawFileName)
     const destDir     = normalize(decodeURIComponent(req.headers["x-dest-dir"]  as string ?? ""))
 
     if (!uploadId || isNaN(chunkIndex) || isNaN(totalChunks) || !fileName || !destDir)
@@ -141,6 +142,7 @@ export async function fileRoutes(app: FastifyInstance) {
     let state = uploadState.get(uploadId)
     if (!state) {
       const linuxUser  = await getLinuxUser(user.userId)
+      if (!linuxUser) return reply.status(500).send("User has no Linux account configured")
       // Staging dir lives directly inside destDir — same filesystem, no double-write.
       const stagingDir = join(destDir, `.nasx-uploads-${uploadId}`)
       state = { received: new Set(), totalChunks, fileName, destDir, stagingDir, linuxUser }
@@ -154,7 +156,7 @@ export async function fileRoutes(app: FastifyInstance) {
         uploadId,
         chunkIndex,
         destDir:       state.destDir,
-        linuxUsername: state.linuxUser ?? "",
+        linuxUsername: state.linuxUser!,
         data:          req.body as Buffer,
       })
     } catch (e: any) {
@@ -174,7 +176,7 @@ export async function fileRoutes(app: FastifyInstance) {
     const jobId = await publishJob(
       "fs.assemble",
       {
-        linuxUsername: state.linuxUser ?? "",
+        linuxUsername: state.linuxUser!,
         destFile,
         chunks,
         stagingDir: state.stagingDir,
@@ -200,10 +202,12 @@ export async function fileRoutes(app: FastifyInstance) {
     uploadState.delete(uploadId)
 
     // Fire-and-forget: ask the worker to clean up the staging dir.
-    publishJob(
-      "fs.delete",
-      { linuxUsername: state.linuxUser ?? "", path: state.stagingDir },
-    ).catch(() => {})
+    if (state.linuxUser) {
+      publishJob(
+        "fs.delete",
+        { linuxUsername: state.linuxUser, path: state.stagingDir },
+      ).catch(() => {})
+    }
 
     return reply.send({ ok: true })
   })
