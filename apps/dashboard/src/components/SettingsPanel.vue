@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuth } from '../lib/auth'
 import ProfileSection from './ProfileSection.vue'
 import UserListPanel from './UserListPanel.vue'
@@ -9,6 +9,8 @@ import RolesSection from './RolesSection.vue'
 const { isAdmin, canManageUsers } = useAuth()
 
 type SectionId = 'profile' | 'users' | 'places' | 'roles'
+
+const props = defineProps<{ focusSection?: SectionId | null }>()
 
 interface NavItem {
   id: SectionId
@@ -31,6 +33,8 @@ function showDivider(item: NavItem, index: number): boolean {
 }
 
 const active = ref<SectionId>('profile')
+
+watch(() => props.focusSection, s => { if (s) active.value = s })
 </script>
 
 <template>
