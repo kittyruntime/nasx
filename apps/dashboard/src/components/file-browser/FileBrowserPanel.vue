@@ -39,6 +39,7 @@ const activePlaceId   = ref<string | null>(null)
 const dragOver        = ref(false)
 let   dragDepth = 0
 const fileInput = ref<HTMLInputElement | null>(null)
+const ctxMenu   = ref<{ x: number; y: number } | null>(null)
 
 // ── places ───────────────────────────────────────────────────────────────────
 const VIRTUAL_ROOT: Place = { id: '__root__', name: 'Root', path: '/' }
@@ -324,6 +325,19 @@ function handleDrop(e: DragEvent) {
   if (e.dataTransfer?.files?.length) uploadFiles(e.dataTransfer.files)
 }
 
+// ── context menu ─────────────────────────────────────────────────────────────
+function openContextMenu(entry: Entry | null, e: MouseEvent) {
+  if (entry && !selected.value.has(entry.path)) {
+    selected.value = new Set([entry.path])
+    selectionAnchor.value = entry.path
+  }
+  const x = Math.min(e.clientX, window.innerWidth  - 200)
+  const y = Math.min(e.clientY, window.innerHeight - 320)
+  ctxMenu.value = { x, y }
+}
+
+function closeContextMenu() { ctxMenu.value = null }
+
 // ── init ─────────────────────────────────────────────────────────────────────
 onMounted(async () => {
   dbPlaces.value = (await trpc.place.list.query()) as Place[]
@@ -372,6 +386,7 @@ onMounted(async () => {
         @dragleave="handleDragLeave"
         @dragover.prevent
         @drop.prevent="handleDrop"
+        @contextmenu.prevent="openContextMenu(null, $event)"
       >
         <!-- Drag overlay -->
         <div v-if="dragOver && currentPath"
@@ -423,6 +438,7 @@ onMounted(async () => {
           :rename-value="renameValue"
           @card-click="handleGridCardClick"
           @select-entry="selectEntry"
+          @contextmenu="openContextMenu"
           @start-rename="startRename"
           @commit-rename="commitRename"
           @cancel-rename="cancelRename"
@@ -438,6 +454,7 @@ onMounted(async () => {
           :rename-value="renameValue"
           @row-click="handleRowClick"
           @select-entry="selectEntry"
+          @contextmenu="openContextMenu"
           @start-rename="startRename"
           @commit-rename="commitRename"
           @cancel-rename="cancelRename"
@@ -451,9 +468,111 @@ onMounted(async () => {
 
   <input ref="fileInput" type="file" multiple class="hidden" @change="handleFileInput" />
 
+  <!-- Context menu -->
+  <Teleport to="body">
+    <template v-if="ctxMenu">
+      <div class="fixed inset-0 z-40" @click="closeContextMenu" @contextmenu.prevent="closeContextMenu" />
+      <div
+        @click.stop
+        class="fixed z-50 bg-[#111120] border border-slate-700/60 rounded-xl shadow-2xl overflow-hidden py-1.5 min-w-[180px]"
+        :style="{ left: ctxMenu.x + 'px', top: ctxMenu.y + 'px' }"
+      >
+        <!-- Selection-dependent actions -->
+        <template v-if="selected.size > 0">
+          <button @click="doCopy(); closeContextMenu()"
+            class="ctx-item">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            Copy
+          </button>
+          <button @click="doCut(); closeContextMenu()"
+            class="ctx-item">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/>
+            </svg>
+            Cut
+          </button>
+          <template v-if="selected.size === 1">
+            <button @click="startRename(selectedEntries[0]!); closeContextMenu()"
+              class="ctx-item">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg>
+              Rename
+            </button>
+            <button v-if="selectedEntries[0]?.type === 'file'" @click="downloadSelected(); closeContextMenu()"
+              class="ctx-item">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              Download
+            </button>
+            <button @click="openPermissions(); closeContextMenu()"
+              class="ctx-item">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+              </svg>
+              Permissions
+            </button>
+          </template>
+          <div class="h-px bg-slate-800 mx-2 my-1" />
+          <button @click="doDelete(); closeContextMenu()"
+            class="ctx-item ctx-item-danger">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Delete
+          </button>
+          <div class="h-px bg-slate-800 mx-2 my-1" />
+        </template>
+
+        <!-- General actions -->
+        <button v-if="currentPath" @click="createFolder(); closeContextMenu()" class="ctx-item">
+          <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          </svg>
+          New Folder
+        </button>
+        <button v-if="currentPath" @click="fileInput?.click(); closeContextMenu()" class="ctx-item">
+          <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          Upload
+        </button>
+        <button v-if="clipboard && currentPath" @click="doPaste(); closeContextMenu()"
+          :class="['ctx-item', clipboard.mode === 'cut' ? 'text-amber-400' : 'text-blue-400']">
+          <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          Paste {{ clipboard.mode === 'cut' ? '(move)' : '' }}
+        </button>
+        <div v-if="currentPath" class="h-px bg-slate-800 mx-2 my-1" />
+        <button v-if="currentPath" @click="refresh(); closeContextMenu()" class="ctx-item">
+          <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </template>
+  </Teleport>
+
   <FilePermissionsDialog
     v-if="permDialogPath"
     :path="permDialogPath"
     @close="permDialogPath = null"
   />
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+
+.ctx-item {
+  @apply w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-slate-300
+         hover:bg-slate-800/80 transition-colors text-left;
+}
+.ctx-item-danger {
+  @apply text-red-400 hover:bg-red-500/10;
+}
+</style>

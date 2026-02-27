@@ -11,6 +11,7 @@ defineProps<{
 const emit = defineEmits<{
   cardClick: [entry: Entry, event: MouseEvent]
   selectEntry: [entry: Entry, event: MouseEvent]
+  contextmenu: [entry: Entry, event: MouseEvent]
   startRename: [entry: Entry]
   commitRename: []
   cancelRename: []
@@ -28,6 +29,7 @@ function fileExt(name: string): string {
       v-for="entry in entries"
       :key="entry.path"
       @click.stop="emit('cardClick', entry, $event)"
+      @contextmenu.prevent.stop="emit('contextmenu', entry, $event)"
       @mousedown.shift.prevent
       :class="[
         'group relative flex flex-col items-center gap-1.5 px-2 pt-3 pb-2.5 rounded-xl transition-colors cursor-pointer select-none',

@@ -11,6 +11,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   rowClick: [entry: Entry, event: MouseEvent]
   selectEntry: [entry: Entry, event: MouseEvent]
+  contextmenu: [entry: Entry, event: MouseEvent]
   startRename: [entry: Entry]
   commitRename: []
   cancelRename: []
@@ -59,6 +60,7 @@ function fileExt(name: string): string {
         v-for="entry in entries"
         :key="entry.path"
         @click.stop="emit('rowClick', entry, $event)"
+        @contextmenu.prevent.stop="emit('contextmenu', entry, $event)"
         @mousedown.shift.prevent
         :class="['group transition-colors',
           entry.type === 'dir' ? 'cursor-pointer hover:bg-slate-800/40' : 'cursor-default hover:bg-slate-800/20',
