@@ -2,9 +2,13 @@ import type { FastifyInstance } from "fastify"
 import { createReadStream } from "node:fs"
 import { stat } from "node:fs/promises"
 import { join, basename, normalize } from "node:path"
-import { verifyToken } from "../trpc/auth"
+import { verifyToken, isTokenBlacklisted } from "../trpc/auth"
 import { prisma } from "@nasx/database"
 import { publishJob, requestRead, writeChunk } from "../nats"
+import {
+  getUpload, setUpload, deleteUpload, startUploadGc,
+  MAX_CHUNKS, type UploadState,
+} from "../services/upload.service"
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -38,21 +42,14 @@ async function getLinuxUser(userId: string): Promise<string | null> {
 function authFromRequest(req: { headers: { authorization?: string } }) {
   const h = req.headers.authorization
   if (!h?.startsWith("Bearer ")) return null
-  try { return verifyToken(h.slice(7)) } catch { return null }
+  try {
+    const payload = verifyToken(h.slice(7))
+    if (isTokenBlacklisted(payload.jti)) return null
+    return payload
+  } catch {
+    return null
+  }
 }
-
-// ── In-memory upload state ────────────────────────────────────────────────────
-
-interface UploadState {
-  received:    Set<number>
-  totalChunks: number
-  fileName:    string
-  destDir:     string
-  stagingDir:  string   // destDir/.nasx-uploads-<uploadId>/ — lives on target fs
-  linuxUser:   string | null
-}
-
-const uploadState = new Map<string, UploadState>()
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 
@@ -63,14 +60,26 @@ export async function fileRoutes(app: FastifyInstance) {
     (_req, body, done) => done(null, body),
   )
 
+  // Clean up uploads that have been silent for more than 2 h.
+  startUploadGc((id, state) => {
+    app.log.warn({ uploadId: id }, "Stale upload evicted by GC")
+    publishJob("fs.delete", { linuxUsername: state.linuxUser, path: state.stagingDir })
+      .catch(err => app.log.error(err, "Failed to clean up stale upload staging dir"))
+  })
+
   // ── GET /files/download?path=<path>&token=<jwt> ───────────────────────────
   app.get("/files/download", async (req, reply) => {
     const { path: filePath, token } = req.query as Record<string, string>
     if (!token || !filePath) return reply.status(400).send("Missing params")
 
     let user: { userId: string; isAdmin: boolean }
-    try { user = verifyToken(token) }
-    catch { return reply.status(401).send("Unauthorized") }
+    try {
+      const payload = verifyToken(token)
+      if (isTokenBlacklisted(payload.jti)) return reply.status(401).send("Unauthorized")
+      user = payload
+    } catch {
+      return reply.status(401).send("Unauthorized")
+    }
 
     if (!await hasPermission(user.userId, user.isAdmin, filePath, "canRead"))
       return reply.status(403).send("Forbidden")
@@ -135,18 +144,28 @@ export async function fileRoutes(app: FastifyInstance) {
     if (!uploadId || isNaN(chunkIndex) || isNaN(totalChunks) || !fileName || !destDir)
       return reply.status(400).send("Missing upload metadata")
 
+    if (totalChunks > MAX_CHUNKS)
+      return reply.status(400).send(`totalChunks exceeds maximum of ${MAX_CHUNKS}`)
+
+    if (chunkIndex < 0 || chunkIndex >= totalChunks)
+      return reply.status(400).send("chunkIndex out of range")
+
     if (!await hasPermission(user.userId, user.isAdmin, destDir, "canWrite"))
       return reply.status(403).send("Forbidden")
 
     // Resolve state (init on first chunk).
-    let state = uploadState.get(uploadId)
+    let state = getUpload(uploadId)
     if (!state) {
-      const linuxUser  = await getLinuxUser(user.userId)
+      const linuxUser = await getLinuxUser(user.userId)
       if (!linuxUser) return reply.status(500).send("User has no Linux account configured")
       // Staging dir lives directly inside destDir — same filesystem, no double-write.
       const stagingDir = join(destDir, `.nasx-uploads-${uploadId}`)
-      state = { received: new Set(), totalChunks, fileName, destDir, stagingDir, linuxUser }
-      uploadState.set(uploadId, state)
+      const newState: UploadState = {
+        received: new Set(), totalChunks, fileName, destDir, stagingDir,
+        linuxUser, createdAt: Date.now(),
+      }
+      setUpload(uploadId, newState)
+      state = newState
     }
 
     // Delegate the write to the worker: it creates the staging dir on first
@@ -156,11 +175,11 @@ export async function fileRoutes(app: FastifyInstance) {
         uploadId,
         chunkIndex,
         destDir:       state.destDir,
-        linuxUsername: state.linuxUser!,
+        linuxUsername: state.linuxUser,
         data:          req.body as Buffer,
       })
     } catch (e: any) {
-      uploadState.delete(uploadId)
+      deleteUpload(uploadId)
       if (e?.code === "EACCES") return reply.status(403).send("Permission denied")
       if (e?.code === "ENOSPC") return reply.status(507).send("Insufficient storage")
       return reply.status(500).send(e?.message ?? "Chunk write failed")
@@ -176,14 +195,14 @@ export async function fileRoutes(app: FastifyInstance) {
     const jobId = await publishJob(
       "fs.assemble",
       {
-        linuxUsername: state.linuxUser!,
+        linuxUsername: state.linuxUser,
         destFile,
         chunks,
         stagingDir: state.stagingDir,
       },
       user.userId,
     )
-    uploadState.delete(uploadId)
+    deleteUpload(uploadId)
 
     return reply.send({ ok: true, done: true, jobId })
   })
@@ -196,18 +215,15 @@ export async function fileRoutes(app: FastifyInstance) {
     const { uploadId } = (req.body ?? {}) as { uploadId?: string }
     if (!uploadId) return reply.status(400).send("Missing uploadId")
 
-    const state = uploadState.get(uploadId)
+    const state = getUpload(uploadId)
     if (!state) return reply.send({ ok: true })
 
-    uploadState.delete(uploadId)
+    deleteUpload(uploadId)
 
-    // Fire-and-forget: ask the worker to clean up the staging dir.
-    if (state.linuxUser) {
-      publishJob(
-        "fs.delete",
-        { linuxUsername: state.linuxUser, path: state.stagingDir },
-      ).catch(() => {})
-    }
+    publishJob(
+      "fs.delete",
+      { linuxUsername: state.linuxUser, path: state.stagingDir },
+    ).catch(err => app.log.error(err, "Failed to clean up upload staging dir on cancel"))
 
     return reply.send({ ok: true })
   })

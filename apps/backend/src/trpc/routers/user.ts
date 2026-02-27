@@ -1,27 +1,7 @@
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import bcrypt from "bcryptjs"
 import { router, protectedProcedure, userManagerProcedure } from "../index"
-
-const userSelect = {
-  id: true,
-  username: true,
-  displayName: true,
-  linuxUsername: true,
-  createdAt: true,
-  userRoles: {
-    select: {
-      role: {
-        select: {
-          id: true,
-          name: true,
-          isAdmin: true,
-          permissions: { select: { permission: { select: { name: true } } } },
-        },
-      },
-    },
-  },
-} as const
+import { userSelect, createUser, changePassword } from "../../services/user.service"
 
 export const userRouter = router({
   list: protectedProcedure.query(({ ctx }) => {
@@ -38,32 +18,10 @@ export const userRouter = router({
   create: userManagerProcedure
     .input(z.object({
       username: z.string().min(1).max(64),
-      password: z.string().min(6),
+      password: z.string().min(6).max(128),
       displayName: z.string().max(64).optional(),
     }))
-    .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.prisma.user.findUnique({ where: { username: input.username } })
-      if (existing) throw new TRPCError({ code: "CONFLICT", message: "Username already taken" })
-
-      const hashedPassword = await bcrypt.hash(input.password, 12)
-
-      // Create user + personal role in one transaction
-      return ctx.prisma.$transaction(async tx => {
-        const user = await tx.user.create({
-          data: {
-            username: input.username,
-            password: hashedPassword,
-            displayName: input.displayName ?? null,
-          },
-          select: userSelect,
-        })
-        // Personal role: named after the username, assigned immediately
-        const personalRole = await tx.role.create({ data: { name: input.username } })
-        await tx.userRole.create({ data: { userId: user.id, roleId: personalRole.id } })
-        // Re-fetch with the new role included
-        return tx.user.findUniqueOrThrow({ where: { id: user.id }, select: userSelect })
-      })
-    }),
+    .mutation(({ ctx, input }) => createUser(ctx.prisma, input)),
 
   update: userManagerProcedure
     .input(z.object({
@@ -105,22 +63,11 @@ export const userRouter = router({
   changePassword: protectedProcedure
     .input(z.object({
       currentPassword: z.string(),
-      newPassword: z.string().min(6),
+      newPassword: z.string().min(6).max(128),
     }))
-    .mutation(async ({ ctx, input }) => {
-      const user = await ctx.prisma.user.findUniqueOrThrow({
-        where: { id: ctx.user.userId },
-        select: { password: true },
-      })
-      if (!(await bcrypt.compare(input.currentPassword, user.password)))
-        throw new TRPCError({ code: "FORBIDDEN", message: "Current password is incorrect" })
-      const newHashed = await bcrypt.hash(input.newPassword, 12)
-      return ctx.prisma.user.update({
-        where: { id: ctx.user.userId },
-        data: { password: newHashed },
-        select: { id: true, username: true },
-      })
-    }),
+    .mutation(({ ctx, input }) =>
+      changePassword(ctx.prisma, ctx.user.userId, input.currentPassword, input.newPassword)
+    ),
 
   delete: userManagerProcedure
     .input(z.object({ userId: z.string() }))

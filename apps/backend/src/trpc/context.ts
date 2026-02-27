@@ -1,14 +1,17 @@
 import { prisma } from "@nasx/database"
 import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify"
-import { verifyToken, type TokenPayload } from "./auth"
+import { verifyToken, isTokenBlacklisted, type TokenPayload } from "./auth"
 
-export function createContext({ req, res }: CreateFastifyContextOptions) {
+export async function createContext({ req, res }: CreateFastifyContextOptions) {
   let user: TokenPayload | null = null
 
   const authHeader = req.headers.authorization
   if (authHeader?.startsWith("Bearer ")) {
     try {
-      user = verifyToken(authHeader.slice(7))
+      const payload = verifyToken(authHeader.slice(7))
+      if (!isTokenBlacklisted(payload.jti)) {
+        user = payload
+      }
     } catch {
       // invalid token — user stays null
     }

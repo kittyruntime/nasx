@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken"
+import crypto from "node:crypto"
 
 if (!process.env.JWT_SECRET) {
   console.warn(
@@ -13,14 +14,30 @@ export interface TokenPayload {
   userId: string
   isAdmin: boolean
   canManageUsers: boolean
+  jti: string
 }
 
 export function signToken(userId: string, isAdmin: boolean, canManageUsers: boolean): string {
-  return jwt.sign({ userId, isAdmin, canManageUsers }, JWT_SECRET, { expiresIn: "7d" })
+  const jti = crypto.randomUUID()
+  return jwt.sign({ userId, isAdmin, canManageUsers, jti }, JWT_SECRET, { expiresIn: "7d" })
 }
 
 export function verifyToken(token: string): TokenPayload {
   return jwt.verify(token, JWT_SECRET) as TokenPayload
+}
+
+// ── In-memory token blacklist ─────────────────────────────────────────────────
+// Holds JTIs of logged-out tokens until they expire.
+// Lost on restart — acceptable since restarts already invalidate all jobs.
+
+const blacklist = new Set<string>()
+
+export function blacklistToken(jti: string): void {
+  blacklist.add(jti)
+}
+
+export function isTokenBlacklisted(jti: string): boolean {
+  return blacklist.has(jti)
 }
 
 /**

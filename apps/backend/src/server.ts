@@ -5,8 +5,8 @@ const app = buildApp()
 const start = async () => {
   try {
     await connectNats()
-    void startEventSubscriber().catch(err => {
-      app.log.error(err)
+    void startEventSubscriber(app.log).catch(err => {
+      app.log.error(err, "nats: event subscriber fatal error")
       process.exit(1)
     })
 

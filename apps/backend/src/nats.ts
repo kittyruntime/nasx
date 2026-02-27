@@ -1,5 +1,6 @@
 import { connect, StringCodec, NatsError } from "nats"
 import type { NatsConnection, JetStreamClient, JetStreamManager } from "nats"
+import type { FastifyBaseLogger } from "fastify"
 import { prisma } from "@nasx/database"
 import crypto from "node:crypto"
 
@@ -61,6 +62,12 @@ export async function connectNats(): Promise<void> {
     where: { status: { in: ["pending", "running"] } },
     data:  { status: "failed", error: "Server restarted before job completed" },
   })
+}
+
+// ── Health ────────────────────────────────────────────────────────────────────
+
+export function isNatsConnected(): boolean {
+  return !!nc && !nc.isClosed() && !nc.isDraining()
 }
 
 // ── Publish async job ─────────────────────────────────────────────────────────
@@ -162,7 +169,7 @@ type JobEvent = {
   error?:  string
 }
 
-export async function startEventSubscriber(): Promise<void> {
+export async function startEventSubscriber(log: FastifyBaseLogger): Promise<void> {
   const sub = nc.subscribe("nasx.events.job.*")
 
   for await (const msg of sub) {
@@ -171,11 +178,11 @@ export async function startEventSubscriber(): Promise<void> {
       try {
         event = JSON.parse(sc.decode(msg.data)) as JobEvent
       } catch {
-        console.error("[nats] event subscriber: invalid JSON in message, skipping")
+        log.warn("nats: event subscriber received invalid JSON, skipping message")
         continue
       }
       if (!event.jobId) {
-        console.error("[nats] event subscriber: missing jobId, skipping")
+        log.warn("nats: event subscriber received message without jobId, skipping")
         continue
       }
       await prisma.job.update({
@@ -187,7 +194,7 @@ export async function startEventSubscriber(): Promise<void> {
         },
       })
     } catch (e) {
-      console.error("[nats] event subscriber error:", e)
+      log.error(e, "nats: event subscriber error")
     }
   }
 }

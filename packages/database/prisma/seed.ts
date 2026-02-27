@@ -4,11 +4,17 @@ import bcrypt from "bcryptjs"
 const prisma = new PrismaClient()
 
 async function main() {
-  // Admin user — always ensure the password is hashed
-  const hashedPassword = await bcrypt.hash("admin", 12)
-  const adminUser = await prisma.user.upsert({
+  // Admin user — hash the password only when needed (cost 12 is slow).
+  // Re-hash if the stored value is plaintext (doesn't start with "$2").
+  const existing = await prisma.user.findUnique({
     where: { username: "admin" },
-    update: { password: hashedPassword },
+    select: { id: true, password: true },
+  })
+  const needsHash = !existing || !existing.password.startsWith("$2")
+  const hashedPassword = needsHash ? await bcrypt.hash("admin", 12) : existing.password
+  const adminUser = await prisma.user.upsert({
+    where:  { username: "admin" },
+    update: needsHash ? { password: hashedPassword } : {},
     create: { username: "admin", password: hashedPassword },
   })
 
