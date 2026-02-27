@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -106,6 +107,7 @@ func withUser(username string, fn func() error) error {
 // ── JetStream stream setup ────────────────────────────────────────────────────
 
 var taskSubjects = []string{
+	// Filesystem operations
 	"nasx.root.fs.mkdir",
 	"nasx.root.fs.copy",
 	"nasx.root.fs.move",
@@ -114,6 +116,17 @@ var taskSubjects = []string{
 	"nasx.root.fs.assemble",
 	"nasx.root.fs.chmod",
 	"nasx.root.fs.chown",
+	// Container (Docker) operations
+	"nasx.root.docker.container.create",
+	"nasx.root.docker.container.recreate",
+	"nasx.root.docker.container.start",
+	"nasx.root.docker.container.stop",
+	"nasx.root.docker.container.restart",
+	"nasx.root.docker.container.remove",
+	"nasx.root.docker.network.create",
+	"nasx.root.docker.network.remove",
+	"nasx.root.docker.volume.create",
+	"nasx.root.docker.volume.remove",
 }
 
 func ensureStream(js nats.JetStreamContext) error {
@@ -130,6 +143,22 @@ func ensureStream(js nats.JetStreamContext) error {
 		}
 	}
 	return nil
+}
+
+// ensureConsumer deletes the durable pull consumer if its filter subject is
+// stale (e.g. "nasx.root.fs.*") so that PullSubscribe can recreate it with the
+// broader "nasx.root.>" filter that covers both FS and Docker subjects.
+func ensureConsumer(js nats.JetStreamContext) {
+	info, err := js.ConsumerInfo("NASX_TASKS", "nasx-root-worker")
+	if err != nil {
+		return // doesn't exist yet — PullSubscribe will create it
+	}
+	if info.Config.FilterSubject == "nasx.root.fs.*" {
+		log.Println("Migrating pull consumer filter from nasx.root.fs.* to nasx.root.>")
+		if err := js.DeleteConsumer("NASX_TASKS", "nasx-root-worker"); err != nil {
+			log.Printf("warn: delete old consumer: %v", err)
+		}
+	}
 }
 
 // ── Request-reply handlers ────────────────────────────────────────────────────
@@ -288,6 +317,12 @@ func handleRead(nc *nats.Conn, msg *nats.Msg) {
 // ── JetStream task handler ────────────────────────────────────────────────────
 
 func handleTask(nc *nats.Conn, msg *nats.Msg) {
+	// Route docker subjects to the docker handler before parsing the FS taskMsg.
+	if strings.HasPrefix(msg.Subject, "nasx.root.docker.") {
+		handleDockerTask(nc, msg, msg.Subject)
+		return
+	}
+
 	var task taskMsg
 	if err := json.Unmarshal(msg.Data, &task); err != nil {
 		log.Printf("malformed task: %v", err)
@@ -491,12 +526,15 @@ func main() {
 		log.Fatalf("Stream setup: %v", err)
 	}
 
+	ensureConsumer(js)
+
 	// ── Request-reply subscriptions (sync ops) ─────────────────────────────
 	for subj, handler := range map[string]func(*nats.Conn, *nats.Msg){
-		"nasx.root.fs.list":        handleList,
-		"nasx.root.fs.stat":        handleStat,
-		"nasx.root.fs.read":        handleRead,
-		"nasx.root.fs.write-chunk": handleWriteChunk,
+		"nasx.root.fs.list":                     handleList,
+		"nasx.root.fs.stat":                     handleStat,
+		"nasx.root.fs.read":                     handleRead,
+		"nasx.root.fs.write-chunk":              handleWriteChunk,
+		"nasx.root.docker.container.inspect":    handleDockerInspect,
 	} {
 		h := handler // capture
 		if _, err := nc.Subscribe(subj, func(msg *nats.Msg) { h(nc, msg) }); err != nil {
@@ -505,7 +543,7 @@ func main() {
 	}
 
 	// ── JetStream pull consumer (async jobs) ──────────────────────────────
-	sub, err := js.PullSubscribe("nasx.root.fs.*", "nasx-root-worker",
+	sub, err := js.PullSubscribe("nasx.root.>", "nasx-root-worker",
 		nats.BindStream("NASX_TASKS"),
 		nats.MaxDeliver(3),
 		nats.AckExplicit(),

@@ -1,0 +1,146 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { trpc } from '../../../lib/trpc'
+
+type Network = { id: string; name: string; driver: string; subnet: string | null; gateway: string | null }
+
+const networks  = ref<Network[]>([])
+const loading   = ref(true)
+const adding    = ref(false)
+const addLoading = ref(false)
+const addError  = ref('')
+const form      = ref({ name: '', driver: 'bridge', subnet: '', gateway: '' })
+
+async function load() {
+  loading.value = true
+  try {
+    networks.value = await trpc.container.network.list.query() as Network[]
+  } finally {
+    loading.value = false
+  }
+}
+onMounted(load)
+
+async function addNetwork() {
+  addError.value = ''
+  addLoading.value = true
+  try {
+    const { network } = await trpc.container.network.create.mutate({
+      name:    form.value.name.trim(),
+      driver:  form.value.driver as any,
+      subnet:  form.value.subnet.trim() || null,
+      gateway: form.value.gateway.trim() || null,
+    })
+    networks.value.push(network as Network)
+    form.value = { name: '', driver: 'bridge', subnet: '', gateway: '' }
+    adding.value = false
+  } catch (e: any) {
+    addError.value = e?.message ?? 'Failed to create network'
+  } finally {
+    addLoading.value = false
+  }
+}
+
+async function deleteNetwork(id: string) {
+  if (!confirm('Remove this network?')) return
+  try {
+    await trpc.container.network.delete.mutate({ id })
+    networks.value = networks.value.filter(n => n.id !== id)
+  } catch (e: any) {
+    alert(e?.message ?? 'Failed to delete network')
+  }
+}
+</script>
+
+<template>
+  <div class="flex flex-col h-full">
+    <!-- Toolbar -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
+      <h3 class="text-sm font-semibold text-slate-200">Networks</h3>
+      <button
+        @click="adding = !adding"
+        class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-500 transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        New Network
+      </button>
+    </div>
+
+    <!-- Add form -->
+    <div v-if="adding" class="mx-6 my-4 p-4 bg-[#0c0c1c] border border-slate-700/60 rounded-xl space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1.5">
+          <label class="text-xs text-slate-400">Name *</label>
+          <input v-model="form.name" placeholder="my-network"
+            class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60" />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-xs text-slate-400">Driver</label>
+          <select v-model="form.driver"
+            class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60">
+            <option>bridge</option>
+            <option>overlay</option>
+            <option>host</option>
+            <option>none</option>
+            <option>macvlan</option>
+          </select>
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-xs text-slate-400">Subnet CIDR</label>
+          <input v-model="form.subnet" placeholder="172.20.0.0/16"
+            class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60" />
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-xs text-slate-400">Gateway</label>
+          <input v-model="form.gateway" placeholder="172.20.0.1"
+            class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60" />
+        </div>
+      </div>
+      <p v-if="addError" class="text-xs text-red-400">{{ addError }}</p>
+      <div class="flex justify-end gap-2">
+        <button @click="adding = false" class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors">Cancel</button>
+        <button @click="addNetwork" :disabled="addLoading || !form.name"
+          class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors">
+          {{ addLoading ? 'Creating…' : 'Create' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="flex-1 overflow-y-auto">
+      <div v-if="loading" class="flex items-center justify-center h-40 text-slate-500 text-sm">Loading…</div>
+      <div v-else-if="networks.length === 0 && !adding" class="flex flex-col items-center justify-center h-40 gap-3 text-slate-600">
+        <p class="text-sm">No networks yet.</p>
+      </div>
+      <table v-else-if="networks.length > 0" class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-800/50">
+            <th class="text-left px-6 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Name</th>
+            <th class="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Driver</th>
+            <th class="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Subnet</th>
+            <th class="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Gateway</th>
+            <th class="px-6 py-2.5" />
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/40">
+          <tr v-for="net in networks" :key="net.id" class="hover:bg-slate-800/20 transition-colors">
+            <td class="px-6 py-3 font-mono text-slate-200">{{ net.name }}</td>
+            <td class="px-3 py-3 text-slate-400">{{ net.driver }}</td>
+            <td class="px-3 py-3 text-slate-400 font-mono text-xs">{{ net.subnet ?? '—' }}</td>
+            <td class="px-3 py-3 text-slate-400 font-mono text-xs">{{ net.gateway ?? '—' }}</td>
+            <td class="px-6 py-3 text-right">
+              <button @click="deleteNetwork(net.id)"
+                class="p-1.5 text-slate-500 hover:text-red-400 transition-colors rounded-lg hover:bg-slate-800/70">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>

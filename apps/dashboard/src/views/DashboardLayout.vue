@@ -6,6 +6,7 @@ import { useUploads } from '../lib/uploads'
 import { useNotifications } from '../lib/notifications'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import FileBrowserPanel from '../components/file-browser/FileBrowserPanel.vue'
+import AppsPanel from '../components/apps/AppsPanel.vue'
 import NotificationsContainer from '../components/NotificationsContainer.vue'
 import NotificationMenu from '../components/NotificationMenu.vue'
 
@@ -36,6 +37,7 @@ const initials = computed(() =>
 const activeAppLabel = computed(() => {
   if (activeApp.value === 'files') return 'Files'
   if (activeApp.value === 'settings') return 'Settings'
+  if (activeApp.value === 'apps') return 'Apps'
   return 'Overview'
 })
 
@@ -126,6 +128,28 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h3.586a1 1 0 01.707.293L11 7h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Apps -->
+        <div class="relative flex justify-center py-0.5">
+          <span
+            v-if="isActive('apps')"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-blue-500 rounded-r-full"
+          />
+          <button
+            @click="selectApp('apps')"
+            title="Apps"
+            :class="[
+              'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
+              isActive('apps')
+                ? 'bg-blue-600/15 text-blue-400'
+                : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-200',
+            ]"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
             </svg>
           </button>
         </div>
@@ -249,6 +273,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
       <!-- Content -->
       <div :class="['flex-1', activeApp !== 'overview' ? 'overflow-hidden' : 'overflow-auto']">
         <FileBrowserPanel v-if="activeApp === 'files'" class="h-full" />
+        <AppsPanel v-else-if="activeApp === 'apps'" class="h-full" />
         <SettingsPanel v-else-if="activeApp === 'settings'" class="h-full" :focusSection="settingsSection" />
         <div v-else class="flex items-center justify-center h-full text-slate-700 select-none">
           <div class="text-center space-y-3">

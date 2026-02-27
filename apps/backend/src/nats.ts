@@ -22,6 +22,16 @@ const TASK_STREAM = {
     "nasx.root.fs.assemble",
     "nasx.root.fs.chmod",
     "nasx.root.fs.chown",
+    "nasx.root.docker.container.create",
+    "nasx.root.docker.container.recreate",
+    "nasx.root.docker.container.start",
+    "nasx.root.docker.container.stop",
+    "nasx.root.docker.container.restart",
+    "nasx.root.docker.container.remove",
+    "nasx.root.docker.network.create",
+    "nasx.root.docker.network.remove",
+    "nasx.root.docker.volume.create",
+    "nasx.root.docker.volume.remove",
   ],
 }
 
@@ -51,7 +61,9 @@ export async function connectNats(): Promise<void> {
   try {
     await jsm.streams.add(TASK_STREAM as any)
   } catch (e: any) {
-    if (!(e instanceof NatsError) || !e.message.includes("stream name already in use")) {
+    if (e instanceof NatsError && e.message.includes("stream name already in use")) {
+      await jsm.streams.update("NASX_TASKS", TASK_STREAM as any)
+    } else {
       throw e
     }
   }

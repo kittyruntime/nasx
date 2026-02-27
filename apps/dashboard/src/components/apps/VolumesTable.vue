@@ -1,0 +1,106 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+
+export interface VolumeMount { type: 'bind' | 'named' | 'place'; source: string; target: string }
+export interface Place        { id: string; name: string; path: string }
+
+const props = defineProps<{
+  modelValue: VolumeMount[]
+  places:     Place[]
+}>()
+const emit = defineEmits<{ 'update:modelValue': [v: VolumeMount[]] }>()
+
+/** Retrouve le chemin réel d'un place à partir de son id. */
+function placePath(id: string): string | null {
+  return props.places.find(p => p.id === id)?.path ?? null
+}
+
+function add()             { emit('update:modelValue', [...props.modelValue, { type: 'bind', source: '', target: '' }]) }
+function remove(i: number) { emit('update:modelValue', props.modelValue.filter((_, idx) => idx !== i)) }
+function update(i: number, field: keyof VolumeMount, val: string) {
+  const copy = props.modelValue.map((v, idx) =>
+    idx === i ? { ...v, [field]: val, ...(field === 'type' ? { source: '' } : {}) } : v
+  )
+  emit('update:modelValue', copy)
+}
+</script>
+
+<template>
+  <div class="space-y-3">
+    <div v-if="modelValue.length === 0" class="text-sm text-slate-500 py-2">No volumes.</div>
+
+    <div v-for="(vol, i) in modelValue" :key="i" class="space-y-1">
+      <div class="flex items-center gap-2">
+        <!-- Type -->
+        <select
+          :value="vol.type"
+          @change="update(i, 'type', ($event.target as HTMLSelectElement).value)"
+          class="bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+        >
+          <option value="bind">Bind</option>
+          <option value="named">Named</option>
+          <option value="place">Place</option>
+        </select>
+
+        <!-- Source -->
+        <!-- bind: chemin hôte libre -->
+        <input
+          v-if="vol.type === 'bind'"
+          :value="vol.source" placeholder="/host/path"
+          @input="update(i, 'source', ($event.target as HTMLInputElement).value)"
+          class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+        />
+        <!-- named: nom du volume Docker -->
+        <input
+          v-else-if="vol.type === 'named'"
+          :value="vol.source" placeholder="my-volume"
+          @input="update(i, 'source', ($event.target as HTMLInputElement).value)"
+          class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+        />
+        <!-- place: select parmi les Places -->
+        <select
+          v-else
+          :value="vol.source"
+          @change="update(i, 'source', ($event.target as HTMLSelectElement).value)"
+          class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+        >
+          <option value="">— select place —</option>
+          <option v-for="pl in places" :key="pl.id" :value="pl.id">{{ pl.name }}</option>
+        </select>
+
+        <span class="text-slate-500 text-sm shrink-0">→</span>
+
+        <!-- Target (chemin dans le container) -->
+        <input
+          :value="vol.target" placeholder="/container/path"
+          @input="update(i, 'target', ($event.target as HTMLInputElement).value)"
+          class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+        />
+
+        <button @click="remove(i)" class="p-1.5 text-slate-500 hover:text-red-400 transition-colors shrink-0">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Chemin résolu pour les Places -->
+      <p
+        v-if="vol.type === 'place' && vol.source && placePath(vol.source)"
+        class="ml-[calc(theme(spacing.2)+5rem)] text-xs text-slate-500 font-mono"
+      >
+        ↳ {{ placePath(vol.source) }}
+      </p>
+    </div>
+
+    <button
+      @click="add"
+      class="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add volume
+    </button>
+  </div>
+</template>
