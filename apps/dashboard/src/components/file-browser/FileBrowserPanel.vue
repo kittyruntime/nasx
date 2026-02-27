@@ -20,7 +20,7 @@ const { track, trackBatch } = useNotifications()
 const { clipboard, copy: clipCopy, cut: clipCut, clear: clipClear } = useClipboard()
 const uploads = useUploads()
 
-const BASE_URL   = (import.meta.env.VITE_API_URL ?? 'http://localhost:9001/trpc').replace(/\/trpc$/, '')
+const BASE_URL   = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/trpc$/, '') : ''
 const CHUNK_SIZE = 2 * 1024 * 1024
 
 // ── state ────────────────────────────────────────────────────────────────────
