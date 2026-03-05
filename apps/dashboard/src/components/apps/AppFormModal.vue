@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onMounted } from 'vue'
+import { parse as parseYaml } from 'yaml'
 import { trpc } from '../../lib/trpc'
 import PortsTable,      { type PortMapping }    from './PortsTable.vue'
 import EnvsEditor,      { type EnvVar }         from './EnvsEditor.vue'
@@ -15,6 +16,7 @@ type App = {
   restartPolicy: string
   hostname: string | null; user: string | null; command: string | null
   cpuLimit: number | null; memoryLimit: string | null
+  pinnedUrl: string | null
   status: string
 }
 
@@ -34,7 +36,8 @@ const tabs: { id: Tab; label: string }[] = [
   { id: 'labels',   label: 'Labels' },
   { id: 'advanced', label: 'Advanced' },
 ]
-const activeTab = ref<Tab>('basic')
+const activeTab   = ref<Tab>('basic')
+const showCompose = ref(false)
 
 function emptyForm() {
   return {
@@ -53,6 +56,7 @@ function emptyForm() {
     command:       null as string | null,
     cpuLimit:      null as number | null,
     memoryLimit:   null as string | null,
+    pinnedUrl:     null as string | null,
   }
 }
 
@@ -62,6 +66,121 @@ const error   = ref('')
 
 const places      = ref<Place[]>([])
 const networkInput = ref('')
+
+// ── Compose tab state ──────────────────────────────────────────────────────────
+const composeRaw             = ref('')
+const composeError           = ref('')
+const composeSelectedService = ref('')
+
+const composeServices = computed<string[]>(() => {
+  if (!composeRaw.value.trim()) return []
+  try {
+    const doc = parseYaml(composeRaw.value) as any
+    return Object.keys(doc?.services ?? {})
+  } catch { return [] }
+})
+
+watch(composeServices, svcs => {
+  if (svcs.length && !svcs.includes(composeSelectedService.value))
+    composeSelectedService.value = svcs[0]
+})
+
+function importCompose() {
+  composeError.value = ''
+  if (!composeRaw.value.trim()) { composeError.value = 'Paste a docker-compose.yml first.'; return }
+  let doc: any
+  try { doc = parseYaml(composeRaw.value) } catch (e: any) { composeError.value = `YAML parse error: ${e.message}`; return }
+  const services = doc?.services
+  if (!services || typeof services !== 'object') { composeError.value = 'No services found.'; return }
+  const svc = services[composeSelectedService.value]
+  if (!svc) { composeError.value = `Service "${composeSelectedService.value}" not found.`; return }
+
+  // image
+  if (svc.image) form.image = svc.image
+
+  // ports
+  if (Array.isArray(svc.ports)) {
+    const parsed: PortMapping[] = []
+    for (const p of svc.ports) {
+      if (typeof p === 'string') {
+        const m = p.match(/^(\d+):(\d+)(?:\/(tcp|udp))?$/)
+        if (m) parsed.push({ hostPort: parseInt(m[1]), containerPort: parseInt(m[2]), protocol: (m[3] as 'tcp'|'udp') ?? 'tcp' })
+      } else if (typeof p === 'object' && p.published != null && p.target != null) {
+        parsed.push({ hostPort: Number(p.published), containerPort: Number(p.target), protocol: p.protocol ?? 'tcp' })
+      }
+    }
+    if (parsed.length) form.ports = parsed
+  }
+
+  // environment
+  if (svc.environment) {
+    const envs: EnvVar[] = []
+    if (Array.isArray(svc.environment)) {
+      for (const e of svc.environment) {
+        const idx = String(e).indexOf('=')
+        if (idx > 0) envs.push({ key: e.slice(0, idx), value: e.slice(idx + 1) })
+      }
+    } else {
+      for (const [k, v] of Object.entries(svc.environment)) envs.push({ key: k, value: String(v ?? '') })
+    }
+    if (envs.length) form.envs = envs
+  }
+
+  // volumes
+  if (Array.isArray(svc.volumes)) {
+    const vols: VolumeMount[] = []
+    for (const v of svc.volumes) {
+      if (typeof v === 'string') {
+        const parts = v.split(':')
+        if (parts.length >= 2) vols.push({ type: 'bind', source: parts[0], target: parts[1] })
+      } else if (typeof v === 'object' && v.target) {
+        vols.push({ type: v.type ?? 'bind', source: v.source ?? '', target: v.target })
+      }
+    }
+    if (vols.length) form.volumes = vols
+  }
+
+  // networks
+  if (svc.networks) {
+    const nets: string[] = Array.isArray(svc.networks) ? svc.networks : Object.keys(svc.networks)
+    if (nets.length) form.networkNames = nets
+  }
+
+  // labels
+  if (svc.labels) {
+    const lbls: LabelEntry[] = []
+    if (Array.isArray(svc.labels)) {
+      for (const l of svc.labels) { const idx = String(l).indexOf('='); if (idx > 0) lbls.push({ key: l.slice(0, idx), value: l.slice(idx + 1) }) }
+    } else {
+      for (const [k, v] of Object.entries(svc.labels)) lbls.push({ key: k, value: String(v ?? '') })
+    }
+    if (lbls.length) form.labels = lbls
+  }
+
+  // cap_add / cap_drop
+  if (Array.isArray(svc.cap_add))  form.capAdd  = svc.cap_add
+  if (Array.isArray(svc.cap_drop)) form.capDrop = svc.cap_drop
+
+  // restart
+  if (svc.restart) form.restartPolicy = svc.restart
+
+  // hostname / user / command
+  if (svc.hostname) form.hostname = svc.hostname
+  if (svc.user)     form.user     = String(svc.user)
+  if (svc.command != null) {
+    form.command = Array.isArray(svc.command) ? svc.command.join(' ') : String(svc.command)
+  }
+
+  // deploy resource limits
+  const limits = svc.deploy?.resources?.limits
+  if (limits?.cpus)   form.cpuLimit    = parseFloat(limits.cpus)
+  if (limits?.memory) form.memoryLimit = String(limits.memory).toLowerCase()
+
+  showCompose.value = false
+  activeTab.value = 'basic'
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 onMounted(async () => {
   try {
@@ -87,11 +206,14 @@ watch(() => props.editApp, (app) => {
       command:       app.command,
       cpuLimit:      app.cpuLimit,
       memoryLimit:   app.memoryLimit,
+      pinnedUrl:     app.pinnedUrl ?? null,
     })
+    activeTab.value = 'basic'
   } else {
     Object.assign(form, emptyForm())
+    activeTab.value = 'basic'
   }
-  activeTab.value = 'basic'
+  showCompose.value = false
   error.value = ''
 }, { immediate: true })
 
@@ -126,6 +248,7 @@ async function save() {
       command:       form.command,
       cpuLimit:      form.cpuLimit,
       memoryLimit:   form.memoryLimit,
+      pinnedUrl:     form.pinnedUrl || null,
     }
     let result: any
     if (props.editApp) {
@@ -153,11 +276,28 @@ async function save() {
           <h2 class="text-base font-semibold text-slate-100">
             {{ editApp ? 'Edit App' : 'New App' }}
           </h2>
-          <button @click="emit('close')" class="text-slate-500 hover:text-slate-300 transition-colors">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              @click="showCompose = !showCompose"
+              :title="showCompose ? 'Close Compose import' : 'Import from docker-compose.yml'"
+              :class="[
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                showCompose
+                  ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/70',
+              ]"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              Import Compose
+            </button>
+            <button @click="emit('close')" class="text-slate-500 hover:text-slate-300 transition-colors">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- Tabs -->
@@ -172,6 +312,40 @@ async function save() {
                 : 'border-transparent text-slate-500 hover:text-slate-300',
             ]"
           >{{ tab.label }}</button>
+        </div>
+
+        <!-- Compose import panel -->
+        <div v-if="showCompose" class="px-6 py-4 border-b border-slate-800 bg-[#0a0a14]/60 space-y-3">
+          <p class="text-xs text-slate-500">Paste a <span class="font-mono">docker-compose.yml</span> to auto-fill the form.</p>
+          <textarea
+            v-model="composeRaw"
+            placeholder="version: '3.8'&#10;services:&#10;  app:&#10;    image: nginx:alpine&#10;    ports:&#10;      - '8080:80'"
+            rows="8"
+            class="w-full bg-[#060610] border border-slate-700/60 rounded-lg px-3 py-2 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500/60 resize-none"
+          />
+          <div class="flex items-center gap-3">
+            <div v-if="composeServices.length > 1" class="flex items-center gap-2 flex-1">
+              <label class="text-xs text-slate-400 whitespace-nowrap">Service:</label>
+              <select
+                v-model="composeSelectedService"
+                class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+              >
+                <option v-for="s in composeServices" :key="s" :value="s">{{ s }}</option>
+              </select>
+            </div>
+            <div v-else-if="composeServices.length === 1" class="flex-1 text-xs text-slate-500">
+              Service: <span class="font-mono text-slate-300">{{ composeServices[0] }}</span>
+            </div>
+            <div v-else class="flex-1" />
+            <p v-if="composeError" class="text-xs text-red-400 mr-2">{{ composeError }}</p>
+            <button
+              @click="importCompose"
+              :disabled="!composeRaw.trim()"
+              class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            >
+              Import &amp; fill form
+            </button>
+          </div>
         </div>
 
         <!-- Content -->
@@ -192,6 +366,15 @@ async function save() {
                 v-model="form.image" placeholder="nginx:alpine"
                 class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-3 py-2 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
               />
+            </div>
+            <!-- Sidebar pin URL -->
+            <div class="space-y-1.5 pt-3 border-t border-slate-800/50">
+              <label class="text-xs font-medium text-slate-400 uppercase tracking-wide">URL sidebar (optional)</label>
+              <input
+                v-model="form.pinnedUrl" placeholder="http://192.168.1.x:8080"
+                class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-3 py-2 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+              />
+              <p class="text-xs text-slate-600">Pins the app in the sidebar if set.</p>
             </div>
           </div>
 
