@@ -39,15 +39,20 @@ async function main() {
 
   // Well-known permissions (glob notation)
   const wellKnown = [
-    "*.*",           // all permissions
-    "users.manage",  // create / edit / delete users
-    "users.*",       // all user permissions
-    "places.manage", // create / edit / delete places
-    "places.*",      // all place permissions
-    "files.*",       // all file operations
+    "*.*",              // all permissions
+    "users.manage",     // create / edit / delete users
+    "users.*",          // all user permissions
+    "places.manage",    // create / edit / delete places
+    "places.*",         // all place permissions
+    "files.*",          // all file operations
     "files.read",
     "files.write",
     "files.delete",
+    "container.*",      // all container operations
+    "container.view",   // list / view containers
+    "container.create", // create containers
+    "container.delete", // delete containers
+    "container.manage", // start / stop / restart containers
   ]
   for (const name of wellKnown) {
     await prisma.permission.upsert({ where: { name }, update: {}, create: { name } })

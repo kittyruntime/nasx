@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import { router, adminProcedure, protectedProcedure } from "../index"
+import { router, adminProcedure, protectedProcedure, withPermission } from "../index"
 import { publishJob, requestSync } from "../../nats"
 import {
   listApps, getApp, createApp, updateApp, deleteApp, setAppStatus,
@@ -80,8 +80,13 @@ async function resolvePlaceMounts(
 
 // ── App sub-router ────────────────────────────────────────────────────────────
 
+const canView   = withPermission("container.view")
+const canCreate = withPermission("container.create")
+const canDelete = withPermission("container.delete")
+const canManage = withPermission("container.manage")
+
 const appRouter = router({
-  list: adminProcedure.query(({ ctx }) => listApps(ctx.prisma)),
+  list: protectedProcedure.use(canView).query(({ ctx }) => listApps(ctx.prisma)),
 
   listPinned: protectedProcedure.query(async ({ ctx }) => {
     const apps = await listApps(ctx.prisma)
@@ -100,11 +105,11 @@ const appRouter = router({
       return { ok: true }
     }),
 
-  get: adminProcedure
+  get: protectedProcedure.use(canView)
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => getApp(ctx.prisma, input.id)),
 
-  create: adminProcedure
+  create: protectedProcedure.use(canCreate)
     .input(zAppInput)
     .mutation(async ({ ctx, input }) => {
       const app = await createApp(ctx.prisma, input)
@@ -154,7 +159,7 @@ const appRouter = router({
       return { app, jobId }
     }),
 
-  delete: adminProcedure
+  delete: protectedProcedure.use(canDelete)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)
@@ -165,7 +170,7 @@ const appRouter = router({
       return { jobId }
     }),
 
-  start: adminProcedure
+  start: protectedProcedure.use(canManage)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)
@@ -175,7 +180,7 @@ const appRouter = router({
       return { jobId }
     }),
 
-  stop: adminProcedure
+  stop: protectedProcedure.use(canManage)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)
@@ -185,7 +190,7 @@ const appRouter = router({
       return { jobId }
     }),
 
-  restart: adminProcedure
+  restart: protectedProcedure.use(canManage)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)
@@ -195,7 +200,7 @@ const appRouter = router({
       return { jobId }
     }),
 
-  inspect: adminProcedure
+  inspect: protectedProcedure.use(canView)
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)

@@ -1,5 +1,6 @@
 import { TRPCError, initTRPC } from "@trpc/server"
 import type { Context } from "./context"
+import { hasPermission } from "./auth"
 
 const t = initTRPC.context<Context>().create()
 
@@ -27,6 +28,30 @@ const isUserManager = t.middleware(({ ctx, next }) => {
   return next()
 })
 
-export const protectedProcedure = t.procedure.use(isAuthed)
-export const adminProcedure = t.procedure.use(isAuthed).use(isAdmin)
+export const protectedProcedure   = t.procedure.use(isAuthed)
+export const adminProcedure       = t.procedure.use(isAuthed).use(isAdmin)
 export const userManagerProcedure = t.procedure.use(isAuthed).use(isUserManager)
+
+/**
+ * Returns a middleware that allows admins unconditionally, and checks
+ * glob-style permission grants from the DB for other authenticated users.
+ * Use as: protectedProcedure.use(withPermission("container.create"))
+ */
+export function withPermission(required: string) {
+  return t.middleware(async ({ ctx, next }) => {
+    if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" })
+    if (ctx.user.isAdmin) return next()
+
+    const userRoles = await ctx.prisma.userRole.findMany({
+      where: { userId: ctx.user.userId },
+      include: { role: { include: { permissions: { include: { permission: true } } } } },
+    })
+    const grants = userRoles.flatMap(ur =>
+      ur.role.permissions.map(rp => rp.permission.name),
+    )
+    if (!hasPermission(grants, required)) {
+      throw new TRPCError({ code: "FORBIDDEN", message: `Missing permission: ${required}` })
+    }
+    return next()
+  })
+}
