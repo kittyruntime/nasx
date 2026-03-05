@@ -41,6 +41,7 @@ export interface AppConfig {
   command?:      string | null
   cpuLimit?:     number | null
   memoryLimit?:  string | null
+  pinnedUrl?:    string | null
 }
 
 export interface NetworkConfig {
@@ -174,6 +175,7 @@ type AppRow = {
   restartPolicy: string
   hostname: string | null; user: string | null; command: string | null
   cpuLimit: number | null; memoryLimit: string | null
+  pinnedUrl: string | null
   status: string; createdAt: Date; updatedAt: Date
 }
 
@@ -194,6 +196,7 @@ function serializeApp(config: AppConfig) {
     command:       config.command     ?? null,
     cpuLimit:      config.cpuLimit    ?? null,
     memoryLimit:   config.memoryLimit ?? null,
+    pinnedUrl:     config.pinnedUrl   ?? null,
   }
 }
 
@@ -215,6 +218,7 @@ function deserializeApp(row: AppRow) {
     command:       row.command,
     cpuLimit:      row.cpuLimit,
     memoryLimit:   row.memoryLimit,
+    pinnedUrl:     row.pinnedUrl,
     status:        row.status,
     createdAt:     row.createdAt,
     updatedAt:     row.updatedAt,

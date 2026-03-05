@@ -15,6 +15,7 @@ model ContainerApp {
   command       String?
   cpuLimit      Float?
   memoryLimit   String?
+  pinnedUrl     String?
   status        String   @default("unknown")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { TRPCError } from "@trpc/server"
-import { router, adminProcedure } from "../index"
+import { router, adminProcedure, protectedProcedure } from "../index"
 import { publishJob, requestSync } from "../../nats"
 import {
   listApps, getApp, createApp, updateApp, deleteApp, setAppStatus,
@@ -48,6 +48,7 @@ const zAppInput = z.object({
   command:       z.string().nullable().optional(),
   cpuLimit:      z.number().min(0).max(64).nullable().optional(),
   memoryLimit:   z.string().regex(/^\d+[kmgKMG]?$/).nullable().optional(),
+  pinnedUrl:     z.string().url().nullable().optional(),
 })
 
 // ── Error mapper ──────────────────────────────────────────────────────────────
@@ -81,6 +82,23 @@ async function resolvePlaceMounts(
 
 const appRouter = router({
   list: adminProcedure.query(({ ctx }) => listApps(ctx.prisma)),
+
+  listPinned: protectedProcedure.query(async ({ ctx }) => {
+    const apps = await listApps(ctx.prisma)
+    return apps
+      .filter(a => a.pinnedUrl)
+      .map(a => ({ id: a.id, name: a.name, status: a.status, pinnedUrl: a.pinnedUrl! }))
+  }),
+
+  pin: adminProcedure
+    .input(z.object({ id: z.string(), pinnedUrl: z.string().url().nullable() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.containerApp.update({
+        where: { id: input.id },
+        data:  { pinnedUrl: input.pinnedUrl ?? null },
+      })
+      return { ok: true }
+    }),
 
   get: adminProcedure
     .input(z.object({ id: z.string() }))

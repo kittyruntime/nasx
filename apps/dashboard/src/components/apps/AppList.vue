@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { trpc } from '../../lib/trpc'
 import AppFormModal from './AppFormModal.vue'
 
@@ -10,44 +10,71 @@ type App = {
   capAdd: string[]; capDrop: string[]; restartPolicy: string
   hostname: string | null; user: string | null; command: string | null
   cpuLimit: number | null; memoryLimit: string | null
+  pinnedUrl: string | null
 }
 
-const apps     = ref<App[]>([])
-const loading  = ref(true)
-const showModal = ref(false)
-const editApp   = ref<App | null>(null)
-const actionLoading = ref<Record<string, string>>({})  // id → action
+const apps          = ref<App[]>([])
+const loading       = ref(true)
+const showModal     = ref(false)
+const editApp       = ref<App | null>(null)
+const actionLoading = ref<Record<string, string>>({})
+
+const pinDialog     = ref<App | null>(null)
+const pinDialogUrl  = ref('')
+const pinDialogErr  = ref('')
+const pinDialogBusy = ref(false)
+
+const pinnedApps = computed(() => apps.value.filter(a => a.pinnedUrl))
 
 async function load() {
   loading.value = true
-  try {
-    apps.value = await trpc.container.app.list.query() as App[]
-  } catch (e: any) {
-    console.error('Failed to load apps:', e.message)
-  } finally {
-    loading.value = false
-  }
+  try { apps.value = await trpc.container.app.list.query() as App[] }
+  catch (e: any) { console.error('Failed to load apps:', e.message) }
+  finally { loading.value = false }
 }
 
 onMounted(load)
 
-function statusColor(status: string) {
+function statusDot(status: string) {
   switch (status) {
-    case 'running': return 'bg-emerald-500'
-    case 'stopped': return 'bg-slate-500'
-    case 'error':   return 'bg-red-500'
-    default:        return 'bg-amber-500'
+    case 'running':       return 'bg-emerald-500'
+    case 'stopped':       return 'bg-slate-600'
+    case 'error':         return 'bg-red-500'
+    case 'transitioning': return 'bg-amber-400 animate-pulse'
+    default:              return 'bg-amber-500'
+  }
+}
+
+function statusText(status: string) {
+  switch (status) {
+    case 'running':       return { label: 'Running',  cls: 'text-emerald-400' }
+    case 'stopped':       return { label: 'Stopped',  cls: 'text-slate-500'   }
+    case 'error':         return { label: 'Error',    cls: 'text-red-400'     }
+    case 'transitioning': return { label: 'Updating…',cls: 'text-amber-400'  }
+    default:              return { label: 'Unknown',  cls: 'text-slate-500'   }
   }
 }
 
 function portsSummary(app: App): string {
   if (!app.ports.length) return '—'
-  return app.ports.slice(0, 3).map(p => `${p.hostPort}:${p.containerPort}`).join(', ')
-    + (app.ports.length > 3 ? ` +${app.ports.length - 3}` : '')
+  return app.ports.slice(0, 2).map(p => `${p.hostPort}:${p.containerPort}`).join(', ')
+    + (app.ports.length > 2 ? ` +${app.ports.length - 2}` : '')
+}
+
+async function pollJob(jobId: string): Promise<void> {
+  const deadline = Date.now() + 30_000
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 1500))
+    try {
+      const j = await trpc.tasks.get.query({ jobId })
+      if (j.status === 'completed' || j.status === 'failed') return
+    } catch { return }
+  }
 }
 
 async function runAction(id: string, action: 'start' | 'stop' | 'restart' | 'delete') {
   actionLoading.value[id] = action
+  const app = apps.value.find(a => a.id === id)
   try {
     if (action === 'delete') {
       if (!confirm('Delete this app? The container will be removed.')) return
@@ -55,40 +82,71 @@ async function runAction(id: string, action: 'start' | 'stop' | 'restart' | 'del
       apps.value = apps.value.filter(a => a.id !== id)
       return
     }
-    await (trpc.container.app[action as 'start' | 'stop' | 'restart'] as any).mutate({ id })
-    // Optimistic status
-    const app = apps.value.find(a => a.id === id)
-    if (app) {
-      app.status = action === 'start' ? 'running' : action === 'stop' ? 'stopped' : 'unknown'
+    if (app) app.status = 'transitioning'
+    const { jobId } = await (trpc.container.app[action as 'start' | 'stop' | 'restart'] as any).mutate({ id })
+    await pollJob(jobId)
+    try {
+      const result = await trpc.container.app.inspect.query({ id })
+      if (app) app.status = (result as any).status ?? 'unknown'
+    } catch {
+      if (app) app.status = action === 'start' ? 'running' : 'stopped'
     }
   } catch (e: any) {
+    if (app) app.status = 'unknown'
     alert(e.message ?? `Failed: ${action}`)
   } finally {
     delete actionLoading.value[id]
   }
 }
 
-function openNew() {
-  editApp.value = null
-  showModal.value = true
-}
-
-function openEdit(app: App) {
-  editApp.value = app
-  showModal.value = true
-}
+function openNew()        { editApp.value = null;  showModal.value = true }
+function openEdit(a: App) { editApp.value = a;     showModal.value = true }
 
 function onSaved(app: App) {
   const idx = apps.value.findIndex(a => a.id === app.id)
   if (idx !== -1) apps.value[idx] = app
   else apps.value.push(app)
 }
+
+function openPinDialog(app: App) {
+  pinDialog.value    = app
+  pinDialogUrl.value = app.pinnedUrl ?? ''
+  pinDialogErr.value = ''
+}
+
+async function savePin() {
+  const app = pinDialog.value
+  if (!app) return
+  const url = pinDialogUrl.value.trim()
+  if (!url) { pinDialogErr.value = 'Enter a URL'; return }
+  pinDialogBusy.value = true
+  pinDialogErr.value  = ''
+  try {
+    await trpc.container.app.pin.mutate({ id: app.id, pinnedUrl: url })
+    app.pinnedUrl   = url
+    pinDialog.value = null
+  } catch (e: any) {
+    pinDialogErr.value = e?.message ?? 'Failed to save'
+  } finally {
+    pinDialogBusy.value = false
+  }
+}
+
+async function unpin(app: App) {
+  try {
+    await trpc.container.app.pin.mutate({ id: app.id, pinnedUrl: null })
+    app.pinnedUrl = null
+  } catch (e: any) {
+    alert(e?.message ?? 'Failed to unpin')
+  }
+}
 </script>
 
 <template>
   <div class="flex flex-col h-full">
+
     <!-- Toolbar -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 flex-shrink-0">
       <h3 class="text-sm font-semibold text-slate-200">Apps</h3>
       <button
         @click="openNew"
@@ -101,103 +159,180 @@ function onSaved(app: App) {
       </button>
     </div>
 
-    <!-- Table -->
+    <!-- Content -->
     <div class="flex-1 overflow-y-auto">
+
       <div v-if="loading" class="flex items-center justify-center h-full text-slate-500 text-sm">Loading…</div>
 
       <div v-else-if="apps.length === 0" class="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
-        <svg class="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+        <svg class="w-12 h-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
           <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
         </svg>
-        <p class="text-sm">No apps yet. Create one to get started.</p>
+        <p class="text-sm">No apps yet.</p>
+        <button @click="openNew" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">Create your first app →</button>
       </div>
 
-      <table v-else class="w-full text-sm">
-        <thead>
-          <tr class="border-b border-slate-800/50">
-            <th class="text-left px-6 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide w-4">Status</th>
-            <th class="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Name</th>
-            <th class="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Image</th>
-            <th class="text-left px-3 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Ports</th>
-            <th class="px-6 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-800/40">
-          <tr v-for="app in apps" :key="app.id" class="hover:bg-slate-800/20 transition-colors">
-            <!-- Status -->
-            <td class="px-6 py-3">
-              <span :class="['inline-block w-2 h-2 rounded-full', statusColor(app.status)]" :title="app.status" />
-            </td>
-            <!-- Name -->
-            <td class="px-3 py-3">
-              <span class="font-mono text-slate-200">{{ app.name }}</span>
-            </td>
-            <!-- Image -->
-            <td class="px-3 py-3 text-slate-400 font-mono text-xs">{{ app.image }}</td>
-            <!-- Ports -->
-            <td class="px-3 py-3 text-slate-400 font-mono text-xs">{{ portsSummary(app) }}</td>
-            <!-- Actions -->
-            <td class="px-6 py-3">
-              <div class="flex items-center justify-end gap-1">
-                <!-- Start -->
-                <button
-                  @click="runAction(app.id, 'start')"
-                  :disabled="!!actionLoading[app.id]"
-                  title="Start"
-                  class="p-1.5 text-slate-500 hover:text-emerald-400 disabled:opacity-40 transition-colors rounded-lg hover:bg-slate-800/70"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z"/>
-                  </svg>
-                </button>
-                <!-- Stop -->
-                <button
-                  @click="runAction(app.id, 'stop')"
-                  :disabled="!!actionLoading[app.id]"
-                  title="Stop"
-                  class="p-1.5 text-slate-500 hover:text-amber-400 disabled:opacity-40 transition-colors rounded-lg hover:bg-slate-800/70"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <rect x="6" y="6" width="12" height="12" rx="1" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-                <!-- Restart -->
-                <button
-                  @click="runAction(app.id, 'restart')"
-                  :disabled="!!actionLoading[app.id]"
-                  title="Restart"
-                  class="p-1.5 text-slate-500 hover:text-blue-400 disabled:opacity-40 transition-colors rounded-lg hover:bg-slate-800/70"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                  </svg>
-                </button>
-                <!-- Edit -->
-                <button
-                  @click="openEdit(app)"
-                  title="Edit"
-                  class="p-1.5 text-slate-500 hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-800/70"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
-                </button>
-                <!-- Delete -->
-                <button
-                  @click="runAction(app.id, 'delete')"
-                  :disabled="!!actionLoading[app.id]"
-                  title="Delete"
-                  class="p-1.5 text-slate-500 hover:text-red-400 disabled:opacity-40 transition-colors rounded-lg hover:bg-slate-800/70"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
-                </button>
+      <template v-else>
+
+        <!-- Quick access -->
+        <div v-if="pinnedApps.length" class="px-6 pt-5 pb-5 border-b border-slate-800/40">
+          <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-3">Quick access</p>
+          <div class="flex flex-wrap gap-2.5">
+            <a
+              v-for="app in pinnedApps" :key="app.id"
+              :href="app.pinnedUrl!" target="_blank" rel="noopener"
+              class="group flex items-center gap-3 px-3.5 py-2.5 bg-slate-800/50 border border-slate-700/40 rounded-xl hover:border-slate-600/70 hover:bg-slate-800 transition-all no-underline"
+            >
+              <span :class="['w-2 h-2 rounded-full flex-shrink-0', statusDot(app.status)]" />
+              <div class="min-w-0">
+                <p class="text-[13px] font-semibold text-slate-200 font-mono leading-none">{{ app.name }}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5 truncate max-w-[180px]">{{ app.pinnedUrl }}</p>
               </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <svg class="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <table class="w-full text-sm table-fixed">
+          <colgroup>
+            <col class="w-[20%]" />
+            <col class="w-[35%]" />
+            <col class="w-[15%]" />
+            <col class="w-[15%]" />
+            <col class="w-[15%]" />
+          </colgroup>
+          <thead>
+            <tr class="border-b border-slate-800/50">
+              <th class="text-left px-6 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Container</th>
+              <th class="text-left px-3 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Image</th>
+              <th class="text-left px-3 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Ports</th>
+              <th class="text-left px-3 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Status</th>
+              <th class="px-6 py-2.5 text-right"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/30">
+            <tr
+              v-for="app in apps" :key="app.id"
+              class="group hover:bg-slate-800/20 transition-colors"
+            >
+              <!-- Name -->
+              <td class="px-6 py-3.5">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-slate-100 text-[13px] font-medium">{{ app.name }}</span>
+                  <svg
+                    v-if="app.pinnedUrl"
+                    class="w-3 h-3 text-blue-500 flex-shrink-0"
+                    fill="currentColor" viewBox="0 0 24 24"
+                  >
+                    <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                  </svg>
+                </div>
+              </td>
+
+              <!-- Image -->
+              <td class="px-3 py-3.5">
+                <span class="font-mono text-slate-400 text-xs truncate block">{{ app.image }}</span>
+              </td>
+
+              <!-- Ports -->
+              <td class="px-3 py-3.5">
+                <span class="font-mono text-slate-500 text-xs">{{ portsSummary(app) }}</span>
+              </td>
+
+              <!-- Status -->
+              <td class="px-3 py-3.5">
+                <span class="flex items-center gap-1.5">
+                  <span :class="['w-1.5 h-1.5 rounded-full', statusDot(app.status)]" />
+                  <span :class="['text-xs', statusText(app.status).cls]">{{ statusText(app.status).label }}</span>
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-6 py-3.5">
+                <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                  <!-- Start / Stop / Restart -->
+                  <div class="flex items-center border border-slate-700/50 rounded-lg overflow-hidden mr-1.5">
+                    <button
+                      @click="runAction(app.id, 'start')"
+                      :disabled="!!actionLoading[app.id]"
+                      title="Start"
+                      class="px-2 py-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 disabled:opacity-30 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                      </svg>
+                    </button>
+                    <span class="w-px h-4 bg-slate-700/50" />
+                    <button
+                      @click="runAction(app.id, 'stop')"
+                      :disabled="!!actionLoading[app.id]"
+                      title="Stop"
+                      class="px-2 py-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-800 disabled:opacity-30 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="6" width="12" height="12" rx="1"/>
+                      </svg>
+                    </button>
+                    <span class="w-px h-4 bg-slate-700/50" />
+                    <button
+                      @click="runAction(app.id, 'restart')"
+                      :disabled="!!actionLoading[app.id]"
+                      title="Restart"
+                      class="px-2 py-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 disabled:opacity-30 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Pin -->
+                  <button
+                    @click="app.pinnedUrl ? unpin(app) : openPinDialog(app)"
+                    :title="app.pinnedUrl ? 'Unpin from quick access' : 'Pin to quick access'"
+                    :class="[
+                      'p-1.5 rounded-lg transition-colors hover:bg-slate-800/70',
+                      app.pinnedUrl ? 'text-blue-400 hover:text-slate-400' : 'text-slate-500 hover:text-slate-300',
+                    ]"
+                  >
+                    <svg class="w-3.5 h-3.5" :fill="app.pinnedUrl ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                    </svg>
+                  </button>
+
+                  <!-- Edit -->
+                  <button
+                    @click="openEdit(app)"
+                    title="Edit"
+                    class="p-1.5 text-slate-500 hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-800/70"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+
+                  <!-- Delete -->
+                  <button
+                    @click="runAction(app.id, 'delete')"
+                    :disabled="!!actionLoading[app.id]"
+                    title="Delete"
+                    class="p-1.5 text-slate-500 hover:text-red-400 disabled:opacity-30 transition-colors rounded-lg hover:bg-slate-800/70"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </template>
     </div>
   </div>
 
@@ -207,4 +342,46 @@ function onSaved(app: App) {
     @close="showModal = false"
     @saved="onSaved"
   />
+
+  <!-- Pin dialog -->
+  <Teleport to="body">
+    <div
+      v-if="pinDialog"
+      class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center"
+      @click.self="pinDialog = null"
+    >
+      <div class="bg-[#111120] border border-slate-700/60 rounded-xl shadow-2xl w-full max-w-sm p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-slate-200">
+            Pin <span class="font-mono text-blue-400">{{ pinDialog.name }}</span> to quick access
+          </h3>
+          <button @click="pinDialog = null" class="text-slate-500 hover:text-slate-300 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="space-y-1.5">
+          <label class="text-xs text-slate-400">URL</label>
+          <input
+            v-model="pinDialogUrl"
+            placeholder="http://192.168.1.x:8080"
+            @keydown.enter.prevent="savePin"
+            @keydown.escape="pinDialog = null"
+            autofocus
+            class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-3 py-2 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+          />
+          <p v-if="pinDialogErr" class="text-xs text-red-400">{{ pinDialogErr }}</p>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button @click="pinDialog = null" class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors">Cancel</button>
+          <button
+            @click="savePin"
+            :disabled="pinDialogBusy || !pinDialogUrl.trim()"
+            class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors"
+          >{{ pinDialogBusy ? 'Saving…' : 'Pin' }}</button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
