@@ -7,6 +7,7 @@ import { useNotifications } from '../lib/notifications'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import FileBrowserPanel from '../components/file-browser/FileBrowserPanel.vue'
 import AppsPanel from '../components/apps/AppsPanel.vue'
+import DashboardPanel from '../components/dashboard/DashboardPanel.vue'
 import NotificationsContainer from '../components/NotificationsContainer.vue'
 import NotificationMenu from '../components/NotificationMenu.vue'
 
@@ -15,7 +16,7 @@ const { currentUsername, isAdmin, logout } = useAuth()
 const uploads = useUploads()
 const { notifications } = useNotifications()
 
-const activeApp        = ref<string>('settings')
+const activeApp        = ref<string>('dashboard')
 const notifMenuOpen    = ref(false)
 const userMenuOpen     = ref(false)
 const settingsSection  = ref<'profile' | 'users' | 'places' | 'roles' | null>(null)
@@ -35,6 +36,7 @@ const initials = computed(() =>
 )
 
 const activeAppLabel = computed(() => {
+  if (activeApp.value === 'dashboard') return 'Overview'
   if (activeApp.value === 'files') return 'Files'
   if (activeApp.value === 'settings') return 'Settings'
   if (activeApp.value === 'apps') return 'Apps'
@@ -90,7 +92,9 @@ function closeUserMenu() {
   userMenuOpen.value = false
 }
 
-onMounted(() => document.addEventListener('click', closeUserMenu))
+onMounted(() => {
+  document.addEventListener('click', closeUserMenu)
+})
 onUnmounted(() => document.removeEventListener('click', closeUserMenu))
 </script>
 
@@ -109,6 +113,28 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
 
       <!-- App nav -->
       <nav class="flex flex-col items-stretch gap-1 flex-1 w-full">
+
+        <!-- Dashboard -->
+        <div class="relative flex justify-center py-0.5">
+          <span
+            v-if="isActive('dashboard')"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-blue-500 rounded-r-full"
+          />
+          <button
+            @click="selectApp('dashboard')"
+            title="Overview"
+            :class="[
+              'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
+              isActive('dashboard')
+                ? 'bg-blue-600/15 text-blue-400'
+                : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-200',
+            ]"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+            </svg>
+          </button>
+        </div>
 
         <!-- Files -->
         <div class="relative flex justify-center py-0.5">
@@ -271,8 +297,9 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
       </header>
 
       <!-- Content -->
-      <div :class="['flex-1', activeApp !== 'overview' ? 'overflow-hidden' : 'overflow-auto']">
-        <FileBrowserPanel v-if="activeApp === 'files'" class="h-full" />
+      <div :class="['flex-1', activeApp !== 'dashboard' ? 'overflow-hidden' : 'overflow-auto']">
+        <DashboardPanel v-if="activeApp === 'dashboard'" class="h-full" />
+        <FileBrowserPanel v-else-if="activeApp === 'files'" class="h-full" />
         <AppsPanel v-else-if="activeApp === 'apps'" class="h-full" />
         <SettingsPanel v-else-if="activeApp === 'settings'" class="h-full" :focusSection="settingsSection" />
         <div v-else class="flex items-center justify-center h-full text-slate-700 select-none">

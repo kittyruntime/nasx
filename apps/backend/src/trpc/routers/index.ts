@@ -7,6 +7,7 @@ import { roleRouter } from "./role"
 import { permissionRouter } from "./permission"
 import { tasksRouter } from "./tasks"
 import { containerRouter } from "./container"
+import { systemRouter } from "./system"
 
 export const appRouter = router({
   auth: authRouter,
@@ -17,6 +18,7 @@ export const appRouter = router({
   permission: permissionRouter,
   tasks: tasksRouter,
   container: containerRouter,
+  system: systemRouter,
 })
 
 export type AppRouter = typeof appRouter
