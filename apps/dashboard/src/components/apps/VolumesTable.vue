@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 
 export interface VolumeMount { type: 'bind' | 'named' | 'place'; source: string; target: string }
 export interface Place        { id: string; name: string; path: string }

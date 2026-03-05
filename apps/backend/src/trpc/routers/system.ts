@@ -20,8 +20,8 @@ function cpuPercent(): number {
   let idleDelta = 0
   let totalDelta = 0
   for (let i = 0; i < current.length; i++) {
-    idleDelta  += current[i].idle  - (cpuPrev[i]?.idle  ?? 0)
-    totalDelta += current[i].total - (cpuPrev[i]?.total ?? 0)
+    idleDelta  += current[i]!.idle  - (cpuPrev[i]?.idle  ?? 0)
+    totalDelta += current[i]!.total - (cpuPrev[i]?.total ?? 0)
   }
   cpuPrev = current
 

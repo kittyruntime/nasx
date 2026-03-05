@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import { trpc } from '../../lib/trpc'
 
 // ---- Types ----------------------------------------------------------------
@@ -61,7 +61,7 @@ const cpuHist = ref<number[]>([])
 const rxHist  = ref<number[]>([])
 const txHist  = ref<number[]>([])
 
-function pushHist(arr: ReturnType<typeof ref<number[]>>, val: number) {
+function pushHist(arr: Ref<number[]>, val: number) {
   arr.value.push(val)
   if (arr.value.length > HIST) arr.value.shift()
 }

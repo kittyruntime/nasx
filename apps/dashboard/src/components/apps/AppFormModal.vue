@@ -82,7 +82,7 @@ const composeServices = computed<string[]>(() => {
 
 watch(composeServices, svcs => {
   if (svcs.length && !svcs.includes(composeSelectedService.value))
-    composeSelectedService.value = svcs[0]
+    composeSelectedService.value = svcs[0] ?? ''
 })
 
 function importCompose() {
@@ -104,7 +104,7 @@ function importCompose() {
     for (const p of svc.ports) {
       if (typeof p === 'string') {
         const m = p.match(/^(\d+):(\d+)(?:\/(tcp|udp))?$/)
-        if (m) parsed.push({ hostPort: parseInt(m[1]), containerPort: parseInt(m[2]), protocol: (m[3] as 'tcp'|'udp') ?? 'tcp' })
+        if (m) parsed.push({ hostPort: parseInt(m[1]!), containerPort: parseInt(m[2]!), protocol: (m[3] as 'tcp'|'udp') ?? 'tcp' })
       } else if (typeof p === 'object' && p.published != null && p.target != null) {
         parsed.push({ hostPort: Number(p.published), containerPort: Number(p.target), protocol: p.protocol ?? 'tcp' })
       }
@@ -132,7 +132,7 @@ function importCompose() {
     for (const v of svc.volumes) {
       if (typeof v === 'string') {
         const parts = v.split(':')
-        if (parts.length >= 2) vols.push({ type: 'bind', source: parts[0], target: parts[1] })
+        if (parts.length >= 2) vols.push({ type: 'bind', source: parts[0]!, target: parts[1]! })
       } else if (typeof v === 'object' && v.target) {
         vols.push({ type: v.type ?? 'bind', source: v.source ?? '', target: v.target })
       }
