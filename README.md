@@ -4,7 +4,7 @@
 > **Early stage software.** NASX is under active development and has not been audited for security. It may contain vulnerabilities, incomplete features, or breaking changes without notice. Use at your own risk, preferably on an isolated network.
 > Tested on **Ubuntu 24.04** only. Other distributions are not officially supported.
 
-A self-hosted server dashboard — browse, upload and manage files, monitor your system, and control Docker containers from any browser.
+A self-hosted server dashboard — browse, upload and manage files, monitor your system, and manage containers from any browser.
 
 ---
 
@@ -30,11 +30,11 @@ The home panel surfaces live system metrics at a glance: CPU, memory, disk usage
 
 ![Upload in progress](docs/screenshots/fm-upload.png)
 
-### Apps (Docker containers)
-- List, inspect, start, stop and restart Docker containers
+### Apps (containers)
+- List, inspect, start, stop and restart containers
 - Create containers with a full form: basic settings, port mappings, environment variables, volume mounts, networks, labels and advanced options
-- Import a **docker-compose YAML** to prefill the form automatically
-- Manage Docker networks and volumes
+- Import a **compose YAML** to prefill the form automatically
+- Manage container networks and volumes
 
 ### Places
 Administrators define **Places** — named mount points that map a server path to a share visible in the browser. Users only see the shares they have access to.

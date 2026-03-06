@@ -84,7 +84,7 @@ function typeLabel(t: string) {
           <label class="text-xs text-slate-400">Type</label>
           <select v-model="form.volumeType"
             class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60">
-            <option value="named">Named (Docker-managed)</option>
+            <option value="named">Named (container-managed)</option>
             <option value="path">Path (host bind)</option>
             <option value="place">Place</option>
           </select>

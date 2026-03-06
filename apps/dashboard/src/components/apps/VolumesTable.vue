@@ -49,7 +49,7 @@ function update(i: number, field: keyof VolumeMount, val: string) {
           @input="update(i, 'source', ($event.target as HTMLInputElement).value)"
           class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
         />
-        <!-- named: nom du volume Docker -->
+        <!-- named: nom du volume container -->
         <input
           v-else-if="vol.type === 'named'"
           :value="vol.source" placeholder="my-volume"

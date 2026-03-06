@@ -87,7 +87,7 @@ watch(composeServices, svcs => {
 
 function importCompose() {
   composeError.value = ''
-  if (!composeRaw.value.trim()) { composeError.value = 'Paste a docker-compose.yml first.'; return }
+  if (!composeRaw.value.trim()) { composeError.value = 'Paste a compose.yml first.'; return }
   let doc: any
   try { doc = parseYaml(composeRaw.value) } catch (e: any) { composeError.value = `YAML parse error: ${e.message}`; return }
   const services = doc?.services
@@ -279,7 +279,7 @@ async function save() {
           <div class="flex items-center gap-2">
             <button
               @click="showCompose = !showCompose"
-              :title="showCompose ? 'Close Compose import' : 'Import from docker-compose.yml'"
+              :title="showCompose ? 'Close Compose import' : 'Import from compose.yml'"
               :class="[
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
                 showCompose
@@ -316,7 +316,7 @@ async function save() {
 
         <!-- Compose import panel -->
         <div v-if="showCompose" class="px-6 py-4 border-b border-slate-800 bg-[#0a0a14]/60 space-y-3">
-          <p class="text-xs text-slate-500">Paste a <span class="font-mono">docker-compose.yml</span> to auto-fill the form.</p>
+          <p class="text-xs text-slate-500">Paste a <span class="font-mono">compose.yml</span> to auto-fill the form.</p>
           <textarea
             v-model="composeRaw"
             placeholder="version: '3.8'&#10;services:&#10;  app:&#10;    image: nginx:alpine&#10;    ports:&#10;      - '8080:80'"
@@ -395,7 +395,7 @@ async function save() {
 
           <!-- Networks -->
           <div v-else-if="activeTab === 'networks'" class="space-y-3">
-            <p class="text-xs text-slate-500">Enter Docker network names to attach (e.g. <span class="font-mono">bridge</span>, <span class="font-mono">host</span>, or a custom network).</p>
+            <p class="text-xs text-slate-500">Enter container network names to attach (e.g. <span class="font-mono">bridge</span>, <span class="font-mono">host</span>, or a custom network).</p>
             <div class="flex gap-2">
               <input
                 v-model="networkInput" placeholder="network-name"

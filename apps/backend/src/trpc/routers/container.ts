@@ -114,7 +114,7 @@ const appRouter = router({
     .mutation(async ({ ctx, input }) => {
       const app = await createApp(ctx.prisma, input)
       const resolvedVolumes = await resolvePlaceMounts(ctx.prisma, input.volumes)
-      const jobId = await publishJob("docker.container.create", {
+      const jobId = await publishJob("container.create", {
         containerName: app.name,
         image:         app.image,
         ports:         app.ports,
@@ -139,7 +139,7 @@ const appRouter = router({
     .mutation(async ({ ctx, input }) => {
       const app = await updateApp(ctx.prisma, input.id, input.data)
       const resolvedVolumes = await resolvePlaceMounts(ctx.prisma, input.data.volumes)
-      const jobId = await publishJob("docker.container.recreate", {
+      const jobId = await publishJob("container.recreate", {
         containerName: app.name,
         image:         app.image,
         ports:         app.ports,
@@ -164,7 +164,7 @@ const appRouter = router({
     .mutation(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)
       await deleteApp(ctx.prisma, input.id)
-      const jobId = await publishJob("docker.container.remove", {
+      const jobId = await publishJob("container.remove", {
         containerName: app.name,
       }, ctx.user.userId)
       return { jobId }
@@ -174,7 +174,7 @@ const appRouter = router({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)
-      const jobId = await publishJob("docker.container.start", {
+      const jobId = await publishJob("container.start", {
         containerName: app.name,
       }, ctx.user.userId)
       return { jobId }
@@ -184,7 +184,7 @@ const appRouter = router({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)
-      const jobId = await publishJob("docker.container.stop", {
+      const jobId = await publishJob("container.stop", {
         containerName: app.name,
       }, ctx.user.userId)
       return { jobId }
@@ -194,7 +194,7 @@ const appRouter = router({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const app = await getApp(ctx.prisma, input.id)
-      const jobId = await publishJob("docker.container.restart", {
+      const jobId = await publishJob("container.restart", {
         containerName: app.name,
       }, ctx.user.userId)
       return { jobId }
@@ -206,7 +206,7 @@ const appRouter = router({
       const app = await getApp(ctx.prisma, input.id)
       try {
         const result = await requestSync<{ status: string; [k: string]: unknown }>(
-          "nasx.root.docker.container.inspect",
+          "nasx.root.container.inspect",
           { containerName: app.name },
         )
         await setAppStatus(ctx.prisma, input.id, result.status ?? "unknown")
@@ -232,7 +232,7 @@ const networkRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const network = await createNetwork(ctx.prisma, input)
-      const jobId = await publishJob("docker.network.create", {
+      const jobId = await publishJob("network.create", {
         networkName: network.name,
         driver:      network.driver,
         subnet:      network.subnet,
@@ -248,7 +248,7 @@ const networkRouter = router({
       const network  = networks.find(n => n.id === input.id)
       if (!network) throw new TRPCError({ code: "NOT_FOUND" })
       await deleteNetwork(ctx.prisma, input.id)
-      const jobId = await publishJob("docker.network.remove", {
+      const jobId = await publishJob("network.remove", {
         networkName: network.name,
       }, ctx.user.userId)
       return { jobId }
@@ -270,7 +270,7 @@ const volumeRouter = router({
     .mutation(async ({ ctx, input }) => {
       const volume = await createVolume(ctx.prisma, input)
       if (volume.volumeType === "named") {
-        const jobId = await publishJob("docker.volume.create", {
+        const jobId = await publishJob("volume.create", {
           volumeName: volume.name,
         }, ctx.user.userId)
         return { volume, jobId }
@@ -286,7 +286,7 @@ const volumeRouter = router({
       if (!volume) throw new TRPCError({ code: "NOT_FOUND" })
       await deleteVolume(ctx.prisma, input.id)
       if (volume.volumeType === "named") {
-        const jobId = await publishJob("docker.volume.remove", {
+        const jobId = await publishJob("volume.remove", {
           volumeName: volume.name,
         }, ctx.user.userId)
         return { jobId }
