@@ -4,7 +4,7 @@
 > **Early stage software.** NASX is under active development and has not been audited for security. It may contain vulnerabilities, incomplete features, or breaking changes without notice. Use at your own risk, preferably on an isolated network.
 > Tested on **Ubuntu 24.04** only. Other distributions are not officially supported.
 
-A self-hosted NAS dashboard — browse, upload, download and manage files on your Linux server from any browser.
+A self-hosted server dashboard — browse, upload and manage files, monitor your system, and control Docker containers from any browser.
 
 ---
 
@@ -13,6 +13,9 @@ A self-hosted NAS dashboard — browse, upload, download and manage files on you
 ---
 
 ## Features
+
+### Overview
+The home panel surfaces live system metrics at a glance: CPU, memory, disk usage and running services.
 
 ### File browser
 - Navigate folders, rename, move, copy, delete files and directories
@@ -27,13 +30,20 @@ A self-hosted NAS dashboard — browse, upload, download and manage files on you
 
 ![Upload in progress](docs/screenshots/fm-upload.png)
 
+### Apps (Docker containers)
+- List, inspect, start, stop and restart Docker containers
+- Create containers with a full form: basic settings, port mappings, environment variables, volume mounts, networks, labels and advanced options
+- Import a **docker-compose YAML** to prefill the form automatically
+- Manage Docker networks and volumes
+
 ### Places
 Administrators define **Places** — named mount points that map a server path to a share visible in the browser. Users only see the shares they have access to.
 
 ### Users & roles
 - Create users with individual Linux account mapping for filesystem-level permission enforcement
-- Assign roles; roles carry read/write permissions per Place
-- Fine-grained per-user overrides on top of role permissions
+- Define roles via a **permission matrix** covering Users, Places, Files, Containers and System categories
+- Assign users to roles; manage membership directly from the role editor
+- Administrators always bypass permission checks
 
 ### Async operations
 Heavy operations (copy, move, assemble large uploads) run as background jobs executed by a privileged worker process. The UI polls for completion and notifies you when done — no browser tab needs to stay open.
