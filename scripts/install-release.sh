@@ -22,7 +22,7 @@
 #   BACKEND_PORT          Backend API port        (default: 9001)
 #   NATS_SERVER_VERSION   nats-server version     (default: v2.10.24)
 #   SKIP_NGINX            Set to 1 to skip nginx  (default: 0)
-#   SKIP_SEED             Set to 1 to skip seed on fresh install (default: 0)
+#   SKIP_SEED             Set to 1 to skip seed entirely (default: 0)
 # =============================================================================
 
 set -euo pipefail
@@ -206,15 +206,24 @@ DB_DIR="$INSTALL_DIR/database/data"
 mkdir -p "$DB_DIR"
 chown "$NASX_USER:" "$DB_DIR"
 
+TSX_BIN="$INSTALL_DIR/node_modules/.bin/tsx"
+
 if [[ "$IS_UPDATE" -eq 1 ]]; then
-  # Apply only additive schema changes. Without --accept-data-loss, Prisma will
-  # refuse to run if a destructive change (column/table removal) is required,
-  # which is the safe default — manual review is needed in that case.
+  # Back up the database before touching the schema.
+  BACKUP="$DB_DIR/nasx.db.bak-$(date +%Y%m%d-%H%M%S)"
+  cp "$DB_FILE" "$BACKUP"
+  success "Database backed up → $BACKUP"
+
+  # Rotate: keep only the 5 most recent backups.
+  ls -1t "$DB_DIR"/nasx.db.bak-* 2>/dev/null | tail -n +6 | xargs -r rm --
+
+  # Apply schema changes. Without --accept-data-loss, Prisma refuses to run
+  # destructive operations — manual intervention would be needed in that case.
   nasx_exec "
     cd '$INSTALL_DIR/database'
     NODE_PATH='$INSTALL_DIR/node_modules' '$PRISMA_BIN' db push
   "
-  success "Schema updated (existing data preserved)"
+  success "Schema migrated (existing data preserved)"
 else
   # Fresh install — no data to protect.
   nasx_exec "
@@ -222,13 +231,20 @@ else
     NODE_PATH='$INSTALL_DIR/node_modules' '$PRISMA_BIN' db push --accept-data-loss
   "
   success "Schema created"
+fi
 
-  if [[ "$SKIP_SEED" != "1" ]]; then
-    TSX_BIN="$INSTALL_DIR/node_modules/.bin/tsx"
-    nasx_exec "
-      cd '$INSTALL_DIR/database'
-      NODE_PATH='$INSTALL_DIR/node_modules' '$TSX_BIN' prisma/seed.ts
-    "
+# Seed runs on every install and update. The seed uses upserts: it adds new
+# roles and permissions introduced in this version without touching existing
+# users or their data. It also re-hashes any plaintext passwords left from
+# older releases.
+if [[ "${SKIP_SEED:-0}" != "1" ]]; then
+  nasx_exec "
+    cd '$INSTALL_DIR/database'
+    NODE_PATH='$INSTALL_DIR/node_modules' '$TSX_BIN' prisma/seed.ts
+  "
+  if [[ "$IS_UPDATE" -eq 1 ]]; then
+    success "Seed applied (new permissions/roles merged, existing data untouched)"
+  else
     success "Database seeded (admin / admin)"
   fi
 fi
