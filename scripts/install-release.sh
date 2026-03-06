@@ -184,7 +184,7 @@ nasx_exec "
   '$NPM_BIN' install \
     --prefix '$INSTALL_DIR' \
     --no-save --no-fund --no-audit \
-    @prisma/client@^6 prisma@^6 tsx@^4
+    @prisma/client@^6 prisma@^6 tsx@^4 bcryptjs@^2
 "
 success "Runtime dependencies installed"
 
