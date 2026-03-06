@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { trpc } from '../../lib/trpc'
 import AppFormModal from './AppFormModal.vue'
 
@@ -18,6 +18,7 @@ const loading       = ref(true)
 const showModal     = ref(false)
 const editApp       = ref<App | null>(null)
 const actionLoading = ref<Record<string, string>>({})
+let   refreshTimer: ReturnType<typeof setInterval> | null = null
 
 const pinDialog     = ref<App | null>(null)
 const pinDialogUrl  = ref('')
@@ -33,7 +34,29 @@ async function load() {
   finally { loading.value = false }
 }
 
-onMounted(load)
+async function refreshStatuses() {
+  if (!apps.value.length) return
+  await Promise.allSettled(
+    apps.value
+      .filter(a => !actionLoading.value[a.id])
+      .map(async (app) => {
+        try {
+          const result = await trpc.container.app.inspect.query({ id: app.id })
+          app.status = (result as any).status ?? 'unknown'
+        } catch { /* keep previous status on error */ }
+      })
+  )
+}
+
+onMounted(async () => {
+  await load()
+  await refreshStatuses()
+  refreshTimer = setInterval(refreshStatuses, 10_000)
+})
+
+onUnmounted(() => {
+  if (refreshTimer !== null) clearInterval(refreshTimer)
+})
 
 function statusDot(status: string) {
   switch (status) {
