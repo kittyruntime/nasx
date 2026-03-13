@@ -28,7 +28,8 @@ export function useTheme() {
     else if (theme.value === 'light') theme.value = 'dark'
     else theme.value = 'auto'
   }
-  return { theme, cycle }
+  function setTheme(value: Theme) { theme.value = value }
+  return { theme, cycle, setTheme }
 }
 
 // ── Accent ────────────────────────────────────────────────────────────────────

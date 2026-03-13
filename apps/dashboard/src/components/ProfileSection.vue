@@ -2,7 +2,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { trpc } from '../lib/trpc'
 import { useAuth } from '../lib/auth'
-import { useAccent, type Accent } from '../lib/theme'
+import { useTheme, useAccent, type Accent } from '../lib/theme'
 
 type Me = {
   id: string
@@ -25,7 +25,14 @@ const meCanManage = computed(() => {
 
 useAuth()
 
+const { theme, setTheme } = useTheme()
 const { accent, setAccent } = useAccent()
+
+const THEME_OPTIONS: { value: 'auto' | 'light' | 'dark'; label: string }[] = [
+  { value: 'auto',  label: 'Auto'  },
+  { value: 'light', label: 'Light' },
+  { value: 'dark',  label: 'Dark'  },
+]
 
 const ACCENT_OPTIONS: { value: Accent; color: string; label: string }[] = [
   { value: 'orange', color: '#f97316', label: 'Orange' },
@@ -254,6 +261,24 @@ onMounted(async () => {
               </button>
             </div>
           </template>
+        </div>
+      </div>
+
+      <!-- ── Theme ── -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-semibold uppercase tracking-widest text-slate-500">Theme</h4>
+        <div class="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl px-4 py-3 flex items-center gap-2">
+          <button
+            v-for="opt in THEME_OPTIONS"
+            :key="opt.value"
+            @click="setTheme(opt.value)"
+            :class="[
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+              theme === opt.value
+                ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]'
+                : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
+            ]"
+          >{{ opt.label }}</button>
         </div>
       </div>
 

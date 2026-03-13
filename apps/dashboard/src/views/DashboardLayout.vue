@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '../lib/auth'
 import { useUploads } from '../lib/uploads'
 import { useNotifications } from '../lib/notifications'
-import { useTheme } from '../lib/theme'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import FileBrowserPanel from '../components/file-browser/FileBrowserPanel.vue'
 import AppsPanel from '../components/apps/AppsPanel.vue'
@@ -14,7 +13,6 @@ import NotificationMenu from '../components/NotificationMenu.vue'
 
 const router = useRouter()
 const { currentUsername, isAdmin, logout } = useAuth()
-const { theme, cycle: cycleTheme } = useTheme()
 const uploads = useUploads()
 const { notifications } = useNotifications()
 
@@ -207,29 +205,6 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         </div>
 
       </nav>
-
-      <!-- Theme toggle -->
-      <button
-        @click="cycleTheme"
-        :title="theme === 'auto' ? 'Theme: auto (following OS)' : theme === 'light' ? 'Theme: light' : 'Theme: dark'"
-        class="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 mb-1 text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]"
-      >
-        <!-- Auto: half circle -->
-        <svg v-if="theme === 'auto'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1M4.22 4.22l.707.707m12.02 12.02.708.708M3 12h1m16 0h1M4.927 19.073l.707-.707M18.364 5.636l.708-.708"/>
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 7a5 5 0 0 1 0 10V7z" fill="currentColor" stroke="none" opacity="0.4"/>
-          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.75" fill="none"/>
-        </svg>
-        <!-- Light: sun -->
-        <svg v-else-if="theme === 'light'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-          <circle cx="12" cy="12" r="4"/>
-          <path stroke-linecap="round" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-        </svg>
-        <!-- Dark: moon -->
-        <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      </button>
 
       <!-- Notifications bell -->
       <button
