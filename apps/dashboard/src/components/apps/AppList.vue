@@ -183,19 +183,40 @@ async function unpin(app: App) {
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-y-auto">
+    <div class="flex-1 overflow-y-auto flex flex-col">
 
-      <div v-if="loading" class="flex items-center justify-center h-full text-slate-500 text-sm">Loading…</div>
-
-      <div v-else-if="apps.length === 0" class="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
-        <svg class="w-12 h-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
+      <!-- Loading -->
+      <div v-if="loading" class="flex-1 flex items-center justify-center gap-2 text-slate-500 text-sm">
+        <svg class="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
         </svg>
-        <p class="text-sm">No apps yet.</p>
-        <button @click="openNew" class="text-sm text-[var(--c-accent)] hover:opacity-80 transition-colors">Create your first app →</button>
+        Loading…
       </div>
 
-      <template v-else>
+      <!-- Empty state -->
+      <div v-else-if="apps.length === 0" class="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-[var(--c-surface-alt)] border border-[var(--c-border)] flex items-center justify-center">
+          <svg class="w-8 h-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.25">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
+          </svg>
+        </div>
+        <div class="space-y-1">
+          <p class="text-sm font-semibold text-[var(--c-text-2)]">No containers yet</p>
+          <p class="text-xs text-slate-600 max-w-xs">Deploy your first container to get started. You can configure ports, volumes, environment variables and more.</p>
+        </div>
+        <button
+          @click="openNew"
+          class="flex items-center gap-1.5 px-4 py-2 bg-[var(--c-accent)] text-[var(--c-accent-fg)] text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          New App
+        </button>
+      </div>
+
+      <div v-else class="flex flex-col flex-1">
 
         <!-- Quick access -->
         <div v-if="pinnedApps.length" class="px-6 pt-5 pb-5 border-b border-[var(--c-border)]">
@@ -355,7 +376,7 @@ async function unpin(app: App) {
           </tbody>
         </table>
 
-      </template>
+      </div>
     </div>
   </div>
 
