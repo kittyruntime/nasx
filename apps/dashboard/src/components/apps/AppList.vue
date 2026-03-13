@@ -125,6 +125,8 @@ async function runAction(id: string, action: 'start' | 'stop' | 'restart' | 'del
 function openNew()        { editApp.value = null;  showModal.value = true }
 function openEdit(a: App) { editApp.value = a;     showModal.value = true }
 
+defineExpose({ openNew })
+
 function onSaved(app: App) {
   const idx = apps.value.findIndex(a => a.id === app.id)
   if (idx !== -1) apps.value[idx] = app
@@ -166,24 +168,10 @@ async function unpin(app: App) {
 </script>
 
 <template>
-  <div class="flex flex-col h-full">
-
-    <!-- Toolbar -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-[var(--c-border)] flex-shrink-0">
-      <h3 class="text-sm font-semibold text-[var(--c-text-1)]">Apps</h3>
-      <button
-        @click="openNew"
-        class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--c-accent)] text-[var(--c-accent-fg)] text-sm rounded-lg hover:opacity-90 transition-colors"
-      >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-        </svg>
-        New App
-      </button>
-    </div>
+  <div class="flex flex-col h-full w-full">
 
     <!-- Content -->
-    <div class="flex-1 overflow-y-auto flex flex-col">
+    <div class="flex-1 overflow-y-auto flex flex-col min-w-0">
 
       <!-- Loading -->
       <div v-if="loading" class="flex-1 flex items-center justify-center gap-2 text-slate-500 text-sm">

@@ -22,6 +22,7 @@ const activeApp        = ref<string>('dashboard')
 const notifMenuOpen    = ref(false)
 const userMenuOpen     = ref(false)
 const settingsSection  = ref<'profile' | 'users' | 'places' | 'roles' | null>(null)
+const appsPanelRef     = ref<InstanceType<typeof AppsPanel> | null>(null)
 
 const badgeCount = computed(() =>
   uploads.tasks.value.filter(t => t.status === 'uploading' || t.status === 'paused').length
@@ -317,15 +318,25 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
     <main class="flex-1 flex flex-col overflow-hidden">
 
       <!-- Top bar -->
-      <header class="h-11 flex items-center px-6 border-b border-[var(--c-border)] flex-shrink-0 bg-[var(--c-surface-alt)]/60 backdrop-blur-sm">
+      <header class="h-11 flex items-center justify-between px-6 border-b border-[var(--c-border)] flex-shrink-0 bg-[var(--c-surface-alt)]/60 backdrop-blur-sm">
         <span class="text-sm font-medium text-[var(--c-text-2)]">{{ activeAppLabel }}</span>
+        <button
+          v-if="activeApp === 'apps' && isAdmin"
+          @click="appsPanelRef?.openNew()"
+          class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--c-accent)] text-[var(--c-accent-fg)] text-xs font-medium rounded-lg hover:opacity-90 transition-opacity"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          New App
+        </button>
       </header>
 
       <!-- Content -->
       <div :class="['flex-1', activeApp !== 'dashboard' ? 'overflow-hidden' : 'overflow-auto']">
         <DashboardPanel v-if="activeApp === 'dashboard'" class="h-full" />
         <FileBrowserPanel v-else-if="activeApp === 'files'" class="h-full" />
-        <AppsPanel v-else-if="activeApp === 'apps'" class="h-full" />
+        <AppsPanel v-else-if="activeApp === 'apps'" ref="appsPanelRef" class="h-full" />
         <SettingsPanel v-else-if="activeApp === 'settings'" class="h-full" :focusSection="settingsSection" />
         <div v-else class="flex items-center justify-center h-full text-slate-700 select-none">
           <div class="text-center space-y-3">
