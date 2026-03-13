@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '../lib/auth'
 import { useUploads } from '../lib/uploads'
 import { useNotifications } from '../lib/notifications'
+import { useTheme } from '../lib/theme'
 import SettingsPanel from '../components/SettingsPanel.vue'
 import FileBrowserPanel from '../components/file-browser/FileBrowserPanel.vue'
 import AppsPanel from '../components/apps/AppsPanel.vue'
@@ -13,6 +14,7 @@ import NotificationMenu from '../components/NotificationMenu.vue'
 
 const router = useRouter()
 const { currentUsername, isAdmin, logout } = useAuth()
+const { theme, cycle: cycleTheme } = useTheme()
 const uploads = useUploads()
 const { notifications } = useNotifications()
 
@@ -99,17 +101,17 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
 </script>
 
 <template>
-  <div class="flex h-screen w-screen bg-[#0f0f1a]">
+  <div class="flex h-screen w-screen bg-[var(--c-bg)]">
 
     <!-- Sidebar: 64px -->
-    <aside class="flex flex-col items-center w-16 bg-[#080812] border-r border-slate-800/50 py-4 flex-shrink-0">
+    <aside class="flex flex-col items-center w-16 bg-[var(--c-sidebar)] border-r border-[var(--c-border)] py-4 flex-shrink-0">
 
       <!-- Brand mark -->
       <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold mb-5 tracking-wider select-none">
         NX
       </div>
 
-      <div class="w-8 border-t border-slate-800 mb-3" />
+      <div class="w-8 border-t border-[var(--c-border)] mb-3" />
 
       <!-- App nav -->
       <nav class="flex flex-col items-stretch gap-1 flex-1 w-full">
@@ -127,7 +129,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
               'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
               isActive('dashboard')
                 ? 'bg-blue-600/15 text-blue-400'
-                : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-200',
+                : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
@@ -149,7 +151,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
               'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
               isActive('files')
                 ? 'bg-blue-600/15 text-blue-400'
-                : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-200',
+                : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
@@ -171,7 +173,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
               'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
               isActive('apps')
                 ? 'bg-blue-600/15 text-blue-400'
-                : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-200',
+                : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
@@ -193,7 +195,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
               'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
               isActive('settings')
                 ? 'bg-blue-600/15 text-blue-400'
-                : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-200',
+                : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
@@ -205,6 +207,29 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
 
       </nav>
 
+      <!-- Theme toggle -->
+      <button
+        @click="cycleTheme"
+        :title="theme === 'auto' ? 'Theme: auto (following OS)' : theme === 'light' ? 'Theme: light' : 'Theme: dark'"
+        class="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 mb-1 text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]"
+      >
+        <!-- Auto: half circle -->
+        <svg v-if="theme === 'auto'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1M4.22 4.22l.707.707m12.02 12.02.708.708M3 12h1m16 0h1M4.927 19.073l.707-.707M18.364 5.636l.708-.708"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 7a5 5 0 0 1 0 10V7z" fill="currentColor" stroke="none" opacity="0.4"/>
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.75" fill="none"/>
+        </svg>
+        <!-- Light: sun -->
+        <svg v-else-if="theme === 'light'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <circle cx="12" cy="12" r="4"/>
+          <path stroke-linecap="round" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <!-- Dark: moon -->
+        <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+
       <!-- Notifications bell -->
       <button
         ref="bellRef"
@@ -213,7 +238,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         class="relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 mb-2"
         :class="notifMenuOpen
           ? 'bg-blue-600/15 text-blue-400'
-          : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-200'"
+          : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]'"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
@@ -232,8 +257,8 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center
                justify-center text-white text-xs font-bold select-none transition-all duration-150"
         :class="userMenuOpen
-          ? 'ring-2 ring-blue-400/60 ring-offset-2 ring-offset-[#080812]'
-          : 'hover:ring-2 hover:ring-slate-600/80 hover:ring-offset-2 hover:ring-offset-[#080812]'"
+          ? 'ring-2 ring-blue-400/60 ring-offset-2 ring-offset-[var(--c-sidebar)]'
+          : 'hover:ring-2 hover:ring-slate-600/80 hover:ring-offset-2 hover:ring-offset-[var(--c-sidebar)]'"
       >
         {{ initials }}
       </button>
@@ -245,27 +270,27 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         <div
           v-if="userMenuOpen"
           @click.stop
-          class="fixed z-50 bg-[#111120] border border-slate-700/60 rounded-xl shadow-2xl overflow-hidden"
+          class="fixed z-50 bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-xl shadow-2xl overflow-hidden"
           :style="{
             bottom: dropdownPos.bottom + 'px',
             left: dropdownPos.left + 'px',
             minWidth: '200px',
           }"
         >
-          <div class="flex items-center gap-3 px-4 py-3.5 border-b border-slate-800">
+          <div class="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--c-border)]">
             <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {{ initials }}
             </div>
             <div class="min-w-0">
-              <div class="text-slate-200 text-sm font-medium truncate">{{ currentUsername }}</div>
+              <div class="text-[var(--c-text-1)] text-sm font-medium truncate">{{ currentUsername }}</div>
               <div class="text-slate-500 text-xs">{{ isAdmin ? 'Administrator' : 'User' }}</div>
             </div>
           </div>
           <div class="p-1.5">
             <button
               @click="goToProfile"
-              class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-300
-                     hover:bg-slate-800/80 rounded-lg transition-colors text-left"
+              class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[var(--c-text-2)]
+                     hover:bg-[var(--c-hover)] rounded-lg transition-colors text-left"
             >
               <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -292,8 +317,8 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
     <main class="flex-1 flex flex-col overflow-hidden">
 
       <!-- Top bar -->
-      <header class="h-11 flex items-center px-6 border-b border-slate-800/50 flex-shrink-0 bg-[#0a0a14]/60 backdrop-blur-sm">
-        <span class="text-sm font-medium text-slate-300">{{ activeAppLabel }}</span>
+      <header class="h-11 flex items-center px-6 border-b border-[var(--c-border)] flex-shrink-0 bg-[var(--c-surface-alt)]/60 backdrop-blur-sm">
+        <span class="text-sm font-medium text-[var(--c-text-2)]">{{ activeAppLabel }}</span>
       </header>
 
       <!-- Content -->

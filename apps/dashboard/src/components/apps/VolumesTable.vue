@@ -34,7 +34,7 @@ function update(i: number, field: keyof VolumeMount, val: string) {
         <select
           :value="vol.type"
           @change="update(i, 'type', ($event.target as HTMLSelectElement).value)"
-          class="bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+          class="bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
         >
           <option value="bind">Bind</option>
           <option value="named">Named</option>
@@ -47,21 +47,21 @@ function update(i: number, field: keyof VolumeMount, val: string) {
           v-if="vol.type === 'bind'"
           :value="vol.source" placeholder="/host/path"
           @input="update(i, 'source', ($event.target as HTMLInputElement).value)"
-          class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
         />
         <!-- named: nom du volume container -->
         <input
           v-else-if="vol.type === 'named'"
           :value="vol.source" placeholder="my-volume"
           @input="update(i, 'source', ($event.target as HTMLInputElement).value)"
-          class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
         />
         <!-- place: select parmi les Places -->
         <select
           v-else
           :value="vol.source"
           @change="update(i, 'source', ($event.target as HTMLSelectElement).value)"
-          class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
         >
           <option value="">— select place —</option>
           <option v-for="pl in places" :key="pl.id" :value="pl.id">{{ pl.name }}</option>
@@ -73,7 +73,7 @@ function update(i: number, field: keyof VolumeMount, val: string) {
         <input
           :value="vol.target" placeholder="/container/path"
           @input="update(i, 'target', ($event.target as HTMLInputElement).value)"
-          class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
         />
 
         <button @click="remove(i)" class="p-1.5 text-slate-500 hover:text-red-400 transition-colors shrink-0">

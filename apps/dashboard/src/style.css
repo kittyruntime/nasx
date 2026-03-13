@@ -1,5 +1,65 @@
 @import "tailwindcss";
 
+/* ── Theme variables ─────────────────────────────────────────────────────────
+   Light mode is the default; dark overrides via prefers-color-scheme.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Light (Adwaita grays) */
+:root {
+  --c-bg:            #f6f5f4;
+  --c-sidebar:       #ebebeb;
+  --c-surface:       #ffffff;
+  --c-surface-alt:   #f6f5f4;
+  --c-surface-deep:  #ededed;
+
+  --c-border:        rgba(0, 0, 0, 0.12);
+  --c-border-strong: rgba(0, 0, 0, 0.20);
+
+  --c-hover:         rgba(0, 0, 0, 0.05);
+
+  --c-text-1:        #2e2e2e;
+  --c-text-2:        #5c5c5c;
+  --c-text-3:        #9a9996;
+}
+
+/* Dark — OS preference (unless user forced light) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --c-bg:            #0f0f1a;
+    --c-sidebar:       #080812;
+    --c-surface:       #111120;
+    --c-surface-alt:   #0a0a14;
+    --c-surface-deep:  #060610;
+
+    --c-border:        rgba(30, 41, 59, 0.5);
+    --c-border-strong: rgba(51, 65, 85, 0.6);
+
+    --c-hover:         rgba(30, 41, 59, 0.7);
+
+    --c-text-1:        #e2e8f0;
+    --c-text-2:        #cbd5e1;
+    --c-text-3:        #f1f5f9;
+  }
+}
+
+/* Dark — forced by user */
+:root[data-theme="dark"] {
+  --c-bg:            #0f0f1a;
+  --c-sidebar:       #080812;
+  --c-surface:       #111120;
+  --c-surface-alt:   #0a0a14;
+  --c-surface-deep:  #060610;
+
+  --c-border:        rgba(30, 41, 59, 0.5);
+  --c-border-strong: rgba(51, 65, 85, 0.6);
+
+  --c-hover:         rgba(30, 41, 59, 0.7);
+
+  --c-text-1:        #e2e8f0;
+  --c-text-2:        #cbd5e1;
+  --c-text-3:        #f1f5f9;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -10,6 +70,7 @@ html, body, #app {
   height: 100%;
   width: 100%;
   font-family: system-ui, -apple-system, sans-serif;
-  background-color: #1a1a2e;
-  color: #e2e8f0;
+  background-color: var(--c-bg);
+  color: var(--c-text-1);
+  color-scheme: light dark;
 }

@@ -11,9 +11,9 @@ const { notifications, dismiss } = useNotifications()
           v-for="n in notifications"
           :key="n.id"
           class="pointer-events-auto flex flex-col gap-1.5 px-4 py-3 rounded-xl shadow-2xl
-                 bg-[#111120] border text-sm"
+                 bg-[var(--c-surface)] border text-sm"
           :class="{
-            'border-slate-700/60':  n.type === 'progress' || n.type === 'info',
+            'border-[var(--c-border-strong)]':  n.type === 'progress' || n.type === 'info',
             'border-emerald-600/40': n.type === 'success',
             'border-red-600/40':     n.type === 'error',
           }"
@@ -43,7 +43,7 @@ const { notifications, dismiss } = useNotifications()
 
             <!-- Text -->
             <div class="flex-1 min-w-0">
-              <div :class="['font-medium leading-snug', n.type === 'error' ? 'text-red-300' : n.type === 'success' ? 'text-emerald-300' : 'text-slate-200']">
+              <div :class="['font-medium leading-snug', n.type === 'error' ? 'text-red-300' : n.type === 'success' ? 'text-emerald-300' : 'text-[var(--c-text-1)]']">
                 {{ n.title }}
               </div>
               <div v-if="n.detail" class="text-xs text-slate-500 mt-0.5 leading-snug">{{ n.detail }}</div>
@@ -53,7 +53,7 @@ const { notifications, dismiss } = useNotifications()
             <button
               v-if="n.type !== 'progress'"
               @click="dismiss(n.id)"
-              class="text-slate-600 hover:text-slate-300 transition-colors shrink-0 mt-0.5"
+              class="text-slate-600 hover:text-[var(--c-text-2)] transition-colors shrink-0 mt-0.5"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>

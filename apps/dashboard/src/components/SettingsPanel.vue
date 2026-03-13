@@ -41,12 +41,12 @@ watch(() => props.focusSection, s => { if (s) active.value = s })
   <div class="flex h-full">
 
     <!-- ── Left nav ───────────────────────────────────────────────────── -->
-    <nav class="w-48 flex-shrink-0 border-r border-slate-800/50 bg-[#080812] py-5 px-2 flex flex-col gap-0.5 overflow-y-auto">
+    <nav class="w-48 flex-shrink-0 border-r border-[var(--c-border)] bg-[var(--c-sidebar)] py-5 px-2 flex flex-col gap-0.5 overflow-y-auto">
 
       <template v-for="(item, i) in visibleNav" :key="item.id">
 
         <!-- Divider before first admin group -->
-        <div v-if="showDivider(item, i)" class="mx-2 my-1.5 border-t border-slate-800/60" />
+        <div v-if="showDivider(item, i)" class="mx-2 my-1.5 border-t border-[var(--c-border)]" />
 
         <div class="relative flex items-center">
           <span
@@ -59,7 +59,7 @@ watch(() => props.focusSection, s => { if (s) active.value = s })
               'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left',
               active === item.id
                 ? 'bg-blue-600/10 text-blue-300'
-                : 'text-slate-500 hover:bg-slate-800/50 hover:text-slate-200',
+                : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
             <!-- Profile icon -->

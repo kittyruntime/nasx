@@ -10,7 +10,7 @@ defineEmits<{ select: [place: Place] }>()
 </script>
 
 <template>
-  <aside class="w-44 flex-shrink-0 border-r border-slate-800/50 bg-[#080812] flex flex-col">
+  <aside class="w-44 flex-shrink-0 border-r border-[var(--c-border)] bg-[var(--c-sidebar)] flex flex-col">
     <div class="px-3 pt-3.5 pb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-600 select-none">
       Places
     </div>
@@ -23,7 +23,7 @@ defineEmits<{ select: [place: Place] }>()
           'flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left text-sm transition-colors',
           activePlaceId === place.id
             ? 'bg-blue-600/15 text-blue-300'
-            : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200',
+            : 'text-slate-400 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
         ]"
       >
         <svg v-if="place.id === '__root__'" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">

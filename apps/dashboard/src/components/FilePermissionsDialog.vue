@@ -84,15 +84,15 @@ async function save() {
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="emit('close')">
-      <div class="w-[420px] bg-[#111120] border border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="w-[420px] bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-2xl shadow-2xl overflow-hidden">
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-800">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-[var(--c-border)]">
           <div>
-            <div class="text-sm font-medium text-slate-200 truncate">{{ path.split('/').pop() }}</div>
+            <div class="text-sm font-medium text-[var(--c-text-1)] truncate">{{ path.split('/').pop() }}</div>
             <div class="text-xs text-slate-600 font-mono mt-0.5">{{ path }}</div>
           </div>
-          <button @click="emit('close')" class="text-slate-600 hover:text-slate-300 transition-colors">
+          <button @click="emit('close')" class="text-slate-600 hover:text-[var(--c-text-2)] transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -113,7 +113,7 @@ async function save() {
 
             <!-- Mode display -->
             <div class="flex items-center gap-3">
-              <span class="font-mono text-lg text-slate-200 tracking-widest">{{ modeDisplay }}</span>
+              <span class="font-mono text-lg text-[var(--c-text-1)] tracking-widest">{{ modeDisplay }}</span>
               <span class="font-mono text-xs text-slate-600 bg-slate-800/60 px-2 py-0.5 rounded">{{ serializeMode() }}</span>
             </div>
 
@@ -127,7 +127,7 @@ async function save() {
                   <th class="text-center font-medium pb-2 w-16">Execute</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800/40">
+              <tbody class="divide-y divide-[var(--c-border)]">
                 <tr v-for="(label, key) in { owner: 'Owner', group: 'Group', other: 'Other' }" :key="key">
                   <td class="py-2.5 text-slate-400 text-xs">{{ label }}</td>
                   <td v-for="bit in (['r', 'w', 'x'] as const)" :key="bit" class="py-2.5 text-center">
@@ -148,7 +148,7 @@ async function save() {
                 <label class="block text-xs text-slate-500 mb-1">Owner</label>
                 <input
                   v-model="owner"
-                  class="w-full bg-[#0a0a14] border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-100
+                  class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-3)]
                          font-mono focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
@@ -156,21 +156,21 @@ async function save() {
                 <label class="block text-xs text-slate-500 mb-1">Group</label>
                 <input
                   v-model="group"
-                  class="w-full bg-[#0a0a14] border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-100
+                  class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-3)]
                          font-mono focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
             </div>
             <div v-else class="flex gap-4 text-sm">
-              <div><span class="text-slate-600 text-xs mr-1">Owner</span><span class="font-mono text-slate-300">{{ owner }}</span></div>
-              <div><span class="text-slate-600 text-xs mr-1">Group</span><span class="font-mono text-slate-300">{{ group }}</span></div>
+              <div><span class="text-slate-600 text-xs mr-1">Owner</span><span class="font-mono text-[var(--c-text-2)]">{{ owner }}</span></div>
+              <div><span class="text-slate-600 text-xs mr-1">Group</span><span class="font-mono text-[var(--c-text-2)]">{{ group }}</span></div>
             </div>
 
           </div>
 
           <!-- Footer -->
-          <div v-if="isAdmin" class="px-5 py-3.5 border-t border-slate-800 flex justify-end gap-2">
-            <button @click="emit('close')" class="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200 transition-colors">Cancel</button>
+          <div v-if="isAdmin" class="px-5 py-3.5 border-t border-[var(--c-border)] flex justify-end gap-2">
+            <button @click="emit('close')" class="px-3 py-1.5 text-sm text-slate-400 hover:text-[var(--c-text-1)] transition-colors">Cancel</button>
             <button
               @click="save"
               :disabled="saving"

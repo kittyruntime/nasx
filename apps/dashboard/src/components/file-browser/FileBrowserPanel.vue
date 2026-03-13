@@ -474,7 +474,7 @@ onMounted(async () => {
       <div class="fixed inset-0 z-40" @click="closeContextMenu" @contextmenu.prevent="closeContextMenu" />
       <div
         @click.stop
-        class="fixed z-50 bg-[#111120] border border-slate-700/60 rounded-xl shadow-2xl overflow-hidden py-1.5 min-w-[180px]"
+        class="fixed z-50 bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-xl shadow-2xl overflow-hidden py-1.5 min-w-[180px]"
         :style="{ left: ctxMenu.x + 'px', top: ctxMenu.y + 'px' }"
       >
         <!-- Selection-dependent actions -->
@@ -569,8 +569,8 @@ onMounted(async () => {
 @reference "tailwindcss";
 
 .ctx-item {
-  @apply w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-slate-300
-         hover:bg-slate-800/80 transition-colors text-left;
+  @apply w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-[var(--c-text-2)]
+         hover:bg-[var(--c-hover)] transition-colors text-left;
 }
 .ctx-item-danger {
   @apply text-red-400 hover:bg-red-500/10;

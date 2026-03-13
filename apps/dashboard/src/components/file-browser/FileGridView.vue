@@ -33,7 +33,7 @@ function fileExt(name: string): string {
       @mousedown.shift.prevent
       :class="[
         'group relative flex flex-col items-center gap-1.5 px-2 pt-3 pb-2.5 rounded-xl transition-colors cursor-pointer select-none',
-        selected.has(entry.path) ? 'bg-blue-600/20 ring-1 ring-blue-500/40' : 'hover:bg-slate-800/50',
+        selected.has(entry.path) ? 'bg-blue-600/20 ring-1 ring-blue-500/40' : 'hover:bg-[var(--c-hover)]',
       ]"
     >
       <!-- Checkbox -->
@@ -42,7 +42,7 @@ function fileExt(name: string): string {
         :class="['absolute top-1.5 left-1.5 w-4 h-4 rounded border flex items-center justify-center transition-all',
           selected.has(entry.path)
             ? 'opacity-100 bg-blue-500 border-blue-500'
-            : 'opacity-0 group-hover:opacity-60 border-slate-600 bg-slate-900/80']">
+            : 'opacity-0 group-hover:opacity-60 border-[var(--c-border-strong)] bg-slate-900/80']">
         <svg v-if="selected.has(entry.path)" class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
@@ -56,7 +56,7 @@ function fileExt(name: string): string {
         <svg class="w-9 h-11 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.25">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
         </svg>
-        <span v-if="fileExt(entry.name)" class="absolute bottom-0.5 text-[8px] font-bold text-slate-500 bg-[#0f0f1a] px-1 rounded leading-tight">
+        <span v-if="fileExt(entry.name)" class="absolute bottom-0.5 text-[8px] font-bold text-slate-500 bg-[var(--c-bg)] px-1 rounded leading-tight">
           {{ fileExt(entry.name) }}
         </span>
       </div>
@@ -72,13 +72,13 @@ function fileExt(name: string): string {
           @blur="emit('cancelRename')"
           @focus="($event.target as HTMLInputElement).select()"
           autofocus
-          class="text-xs bg-[#1a1a2e] border border-blue-500/60 rounded px-1.5 py-0.5 text-slate-200 focus:outline-none w-full text-center"
+          class="text-xs bg-[var(--c-bg)] border border-blue-500/60 rounded px-1.5 py-0.5 text-[var(--c-text-1)] focus:outline-none w-full text-center"
         />
       </template>
       <template v-else>
         <span
           @dblclick.stop="emit('startRename', entry)"
-          class="text-xs leading-tight text-slate-300 w-full text-center truncate px-1 hover:text-white transition-colors"
+          class="text-xs leading-tight text-[var(--c-text-2)] w-full text-center truncate px-1 hover:text-white transition-colors"
           :title="entry.name">
           {{ entry.name }}
         </span>

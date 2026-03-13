@@ -179,9 +179,9 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
   <div class="flex flex-col h-full">
 
     <!-- Toolbar -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 flex-shrink-0">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-[var(--c-border)] flex-shrink-0">
       <div class="flex items-center gap-3">
-        <h3 class="text-sm font-semibold text-slate-200">Overview</h3>
+        <h3 class="text-sm font-semibold text-[var(--c-text-1)]">Overview</h3>
         <span v-if="metrics" class="text-xs text-slate-600 font-mono">{{ uptimeStr }}</span>
       </div>
 
@@ -189,7 +189,7 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
       <div class="relative">
         <button
           @click.stop="addOpen = !addOpen"
-          class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700/50 text-slate-300 text-sm rounded-lg hover:bg-slate-700/70 transition-colors"
+          class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-[var(--c-border-strong)] text-[var(--c-text-2)] text-sm rounded-lg hover:bg-[var(--c-hover)] transition-colors"
         >
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -200,13 +200,13 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
         <Transition name="dropdown">
           <div
             v-if="addOpen"
-            class="absolute right-0 top-full mt-1.5 bg-[#111120] border border-slate-700/60 rounded-xl shadow-2xl overflow-hidden z-20 min-w-[140px]"
+            class="absolute right-0 top-full mt-1.5 bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-xl shadow-2xl overflow-hidden z-20 min-w-[140px]"
           >
             <button
               v-for="cat in CATALOG"
               :key="cat.type"
               @click.stop="addWidget(cat.type)"
-              class="w-full text-left px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800/80 transition-colors"
+              class="w-full text-left px-4 py-2.5 text-sm text-[var(--c-text-2)] hover:bg-[var(--c-hover)] transition-colors"
             >
               {{ cat.label }}
             </button>
@@ -227,14 +227,14 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
       <div class="grid grid-cols-3 gap-4">
         <div
           v-for="w in widgets" :key="w.id"
-          :class="['relative group/card bg-[#0d0d1c] border border-slate-800/60 rounded-2xl p-5 min-h-[130px] flex flex-col', w.cols === 2 ? 'col-span-2' : 'col-span-1']"
+          :class="['relative group/card bg-[var(--c-surface-alt)] border border-[var(--c-border)] rounded-2xl p-5 min-h-[130px] flex flex-col', w.cols === 2 ? 'col-span-2' : 'col-span-1']"
         >
           <!-- Widget controls -->
           <div class="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
             <button
               @click="toggleCols(w)"
               :title="w.cols === 1 ? 'Expand' : 'Shrink'"
-              class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-300 hover:bg-slate-700/50 rounded-md transition-colors text-xs"
+              class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-[var(--c-text-2)] hover:bg-[var(--c-hover)] rounded-md transition-colors text-xs"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4M8 15l4 4 4-4" v-if="w.cols === 1"/>
@@ -257,7 +257,7 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
             <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-3">CPU</p>
             <div class="flex items-end gap-4 flex-1">
               <div class="flex-shrink-0">
-                <span class="text-4xl font-bold text-slate-100 tabular-nums leading-none">
+                <span class="text-4xl font-bold text-[var(--c-text-3)] tabular-nums leading-none">
                   {{ metrics?.cpu ?? '—' }}
                 </span>
                 <span class="text-lg text-slate-500 ml-0.5">%</span>
@@ -287,7 +287,7 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
             <p class="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-3">Memory</p>
             <div class="flex-1 flex flex-col justify-between">
               <div class="flex items-baseline justify-between mb-3">
-                <span class="text-2xl font-bold text-slate-100 tabular-nums leading-none">
+                <span class="text-2xl font-bold text-[var(--c-text-3)] tabular-nums leading-none">
                   {{ metrics ? fmtMem(metrics.memory.used) : '—' }}
                 </span>
                 <span class="text-xs text-slate-500">
@@ -315,11 +315,11 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
                 <div class="space-y-0.5">
                   <div class="flex items-center gap-1.5">
                     <span class="text-[10px] font-semibold text-emerald-500 uppercase tracking-widest">↓ rx</span>
-                    <span class="text-sm font-mono text-slate-200">{{ metrics ? fmtBytes(metrics.network.rx) : '—' }}</span>
+                    <span class="text-sm font-mono text-[var(--c-text-1)]">{{ metrics ? fmtBytes(metrics.network.rx) : '—' }}</span>
                   </div>
                   <div class="flex items-center gap-1.5">
                     <span class="text-[10px] font-semibold text-blue-400 uppercase tracking-widest">↑ tx</span>
-                    <span class="text-sm font-mono text-slate-200">{{ metrics ? fmtBytes(metrics.network.tx) : '—' }}</span>
+                    <span class="text-sm font-mono text-[var(--c-text-1)]">{{ metrics ? fmtBytes(metrics.network.tx) : '—' }}</span>
                   </div>
                 </div>
                 <div class="flex-1 min-w-0 ml-4">

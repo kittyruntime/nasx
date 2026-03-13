@@ -80,15 +80,15 @@ onMounted(load)
       <div
         v-for="place in places"
         :key="place.id"
-        class="bg-[#111120] border border-slate-800/60 rounded-xl overflow-hidden"
+        class="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl overflow-hidden"
       >
         <!-- Place header (accordion) -->
         <button
           @click="togglePlace(place.id)"
-          class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-800/20 transition-colors"
+          class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--c-hover)] transition-colors"
         >
           <div>
-            <span class="text-sm font-medium text-slate-200">{{ place.name }}</span>
+            <span class="text-sm font-medium text-[var(--c-text-1)]">{{ place.name }}</span>
             <span class="ml-2 text-xs text-slate-600 font-mono">{{ place.path }}</span>
           </div>
           <svg
@@ -100,23 +100,23 @@ onMounted(load)
         </button>
 
         <!-- Permission matrix -->
-        <div v-if="expandedPlace === place.id" class="border-t border-slate-800/40">
+        <div v-if="expandedPlace === place.id" class="border-t border-[var(--c-border)]">
           <table class="w-full text-xs">
             <thead>
-              <tr class="text-slate-600 uppercase tracking-wider border-b border-slate-800/40">
+              <tr class="text-slate-600 uppercase tracking-wider border-b border-[var(--c-border)]">
                 <th class="px-4 py-2 text-left font-medium">Subject</th>
                 <th class="px-3 py-2 text-center font-medium w-16">Read</th>
                 <th class="px-3 py-2 text-center font-medium w-16">Write</th>
                 <th class="px-3 py-2 text-center font-medium w-16">Delete</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-800/30">
+            <tbody class="divide-y divide-[var(--c-border)]">
               <!-- Roles -->
               <tr v-for="role in roles" :key="'role-' + role.id">
                 <td class="px-4 py-2.5">
                   <div class="flex items-center gap-1.5">
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-500/15 text-violet-400">role</span>
-                    <span class="text-slate-300">{{ role.name }}</span>
+                    <span class="text-[var(--c-text-2)]">{{ role.name }}</span>
                   </div>
                 </td>
                 <td v-for="field in (['canRead', 'canWrite', 'canDelete'] as const)" :key="field" class="px-3 py-2.5 text-center">
@@ -134,7 +134,7 @@ onMounted(load)
                 <td class="px-4 py-2.5">
                   <div class="flex items-center gap-1.5">
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700/60 text-slate-400">user</span>
-                    <span class="text-slate-300">{{ user.username }}</span>
+                    <span class="text-[var(--c-text-2)]">{{ user.username }}</span>
                   </div>
                 </td>
                 <td v-for="field in (['canRead', 'canWrite', 'canDelete'] as const)" :key="field" class="px-3 py-2.5 text-center">

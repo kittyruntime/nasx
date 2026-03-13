@@ -88,11 +88,11 @@ onMounted(load)
         <div
           v-for="role in roles"
           :key="role.id"
-          class="flex items-center gap-3 px-4 py-3 bg-[#111120] border border-slate-800/60 rounded-xl"
+          class="flex items-center gap-3 px-4 py-3 bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl"
         >
           <!-- Name + badges -->
           <div class="flex-1 min-w-0 flex items-center gap-2">
-            <span class="text-sm font-medium text-slate-200 truncate">{{ role.name }}</span>
+            <span class="text-sm font-medium text-[var(--c-text-1)] truncate">{{ role.name }}</span>
             <span
               v-if="role.isAdmin"
               class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-400 shrink-0"
@@ -110,7 +110,7 @@ onMounted(load)
             </span>
             <button
               @click="openEditor(role)"
-              class="text-xs px-2.5 py-1 rounded-lg border border-slate-700/50 text-slate-500
+              class="text-xs px-2.5 py-1 rounded-lg border border-[var(--c-border-strong)] text-slate-500
                      hover:border-blue-500/40 hover:text-blue-400 transition-colors"
             >Edit</button>
           </div>
@@ -122,7 +122,7 @@ onMounted(load)
         <input
           v-model="newRoleName"
           placeholder="New role name…"
-          class="flex-1 bg-[#111120] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200
+          class="flex-1 bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)]
                  placeholder-slate-600 focus:outline-none focus:border-blue-500/60"
         />
         <button

@@ -169,29 +169,29 @@ onMounted(load)
     </div>
 
     <!-- ── Add user form ── -->
-    <div v-if="addingUser" class="border border-blue-500/30 bg-[#0d0d1f] rounded-xl p-4 space-y-3">
-      <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-widest">New user</h4>
+    <div v-if="addingUser" class="border border-blue-500/30 bg-[var(--c-surface-alt)] rounded-xl p-4 space-y-3">
+      <h4 class="text-xs font-semibold text-[var(--c-text-2)] uppercase tracking-widest">New user</h4>
 
       <div class="grid grid-cols-2 gap-2.5">
         <div>
           <label class="block text-xs text-slate-500 mb-1">Username <span class="text-red-400">*</span></label>
           <input v-model="newUser.username" placeholder="johndoe" autofocus
-            class="w-full bg-[#111120] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
         </div>
         <div>
           <label class="block text-xs text-slate-500 mb-1">Display name</label>
           <input v-model="newUser.displayName" placeholder="John Doe"
-            class="w-full bg-[#111120] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
         </div>
         <div>
           <label class="block text-xs text-slate-500 mb-1">Password <span class="text-red-400">*</span></label>
           <input v-model="newUser.password" type="password" placeholder="Min. 6 chars"
-            class="w-full bg-[#111120] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
         </div>
         <div>
           <label class="block text-xs text-slate-500 mb-1">Confirm password <span class="text-red-400">*</span></label>
           <input v-model="newUser.confirmPassword" type="password" placeholder="Repeat password"
-            class="w-full bg-[#111120] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
         </div>
       </div>
 
@@ -202,7 +202,7 @@ onMounted(load)
           class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors">
           {{ addLoading ? 'Creating…' : 'Create user' }}
         </button>
-        <button @click="cancelAdd" class="px-3 py-1.5 text-slate-500 hover:text-slate-200 text-sm transition-colors">
+        <button @click="cancelAdd" class="px-3 py-1.5 text-slate-500 hover:text-[var(--c-text-1)] text-sm transition-colors">
           Cancel
         </button>
       </div>
@@ -226,10 +226,10 @@ onMounted(load)
     </div>
 
     <!-- ── User table ── -->
-    <div v-else class="rounded-xl border border-slate-800 overflow-hidden">
+    <div v-else class="rounded-xl border border-[var(--c-border)] overflow-hidden">
       <table class="w-full text-sm">
         <thead>
-          <tr class="bg-[#111120] text-left text-xs uppercase tracking-wider text-slate-500">
+          <tr class="bg-[var(--c-surface)] text-left text-xs uppercase tracking-wider text-slate-500">
             <th class="px-5 py-3 font-medium">User</th>
             <th class="px-5 py-3 font-medium">Roles</th>
             <th class="px-5 py-3 font-medium">Linux user</th>
@@ -237,10 +237,10 @@ onMounted(load)
             <th v-if="canManageUsers" class="px-4 py-3 font-medium w-16"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-800/60">
+        <tbody class="divide-y divide-[var(--c-border)]">
           <template v-for="user in users" :key="user.id">
             <!-- User row -->
-            <tr class="bg-[#0f0f1a] hover:bg-[#13132a] transition-colors">
+            <tr class="bg-[var(--c-bg)] hover:bg-[var(--c-surface)] transition-colors">
               <!-- Username + badges -->
               <td class="px-5 py-3.5">
                 <div class="flex items-center gap-3">
@@ -249,7 +249,7 @@ onMounted(load)
                   </div>
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="text-slate-200 font-medium">{{ user.username }}</span>
+                      <span class="text-[var(--c-text-1)] font-medium">{{ user.username }}</span>
                       <span v-if="user.id === currentUserId" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700/60 text-slate-400">you</span>
                       <span v-if="userIsAdmin(user)" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-400">admin</span>
                       <span v-if="!userIsAdmin(user) && userCanManage(user)" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-500/15 text-violet-400">manager</span>
@@ -272,7 +272,7 @@ onMounted(load)
 
               <!-- Linux user -->
               <td class="px-5 py-3.5">
-                <span class="font-mono text-xs" :class="user.linuxUsername ? 'text-slate-300' : 'text-slate-600 italic'">
+                <span class="font-mono text-xs" :class="user.linuxUsername ? 'text-[var(--c-text-2)]' : 'text-slate-600 italic'">
                   {{ user.linuxUsername ?? '—' }}
                 </span>
               </td>
@@ -287,7 +287,7 @@ onMounted(load)
                     v-if="editingUserId !== user.id"
                     @click="openEdit(user)"
                     title="Edit user"
-                    class="p-1.5 rounded text-slate-600 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                    class="p-1.5 rounded text-slate-600 hover:text-[var(--c-text-1)] hover:bg-[var(--c-hover)] transition-colors"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
@@ -309,7 +309,7 @@ onMounted(load)
 
             <!-- Edit form row (expands inline below the row) -->
             <tr v-if="editingUserId === user.id" :key="user.id + '-edit'">
-              <td :colspan="canManageUsers ? 5 : 4" class="px-5 py-4 bg-[#0d0d1f] border-t border-blue-500/20">
+              <td :colspan="canManageUsers ? 5 : 4" class="px-5 py-4 bg-[var(--c-surface-alt)] border-t border-blue-500/20">
                 <div class="space-y-3">
                   <h5 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">
                     Editing {{ editingUser?.username }}
@@ -319,12 +319,12 @@ onMounted(load)
                     <div>
                       <label class="block text-xs text-slate-500 mb-1">Display name</label>
                       <input v-model="editForm.displayName" placeholder="Full name"
-                        class="w-full bg-[#111120] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+                        class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
                     </div>
                     <div>
                       <label class="block text-xs text-slate-500 mb-1">Linux username</label>
                       <input v-model="editForm.linuxUsername" placeholder="linux_user" class="font-mono
-                        w-full bg-[#111120] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+                        w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
                     </div>
                   </div>
 
@@ -335,7 +335,7 @@ onMounted(load)
                       class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors">
                       {{ editLoading ? 'Saving…' : 'Save' }}
                     </button>
-                    <button @click="cancelEdit" class="px-3 py-1.5 text-slate-500 hover:text-slate-200 text-sm transition-colors">
+                    <button @click="cancelEdit" class="px-3 py-1.5 text-slate-500 hover:text-[var(--c-text-1)] text-sm transition-colors">
                       Cancel
                     </button>
                   </div>

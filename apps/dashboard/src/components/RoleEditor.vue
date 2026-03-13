@@ -170,7 +170,7 @@ async function toggleMember(userId: string) {
       <!-- Back -->
       <button
         @click="$emit('back')"
-        class="p-1.5 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800/60 transition-colors shrink-0"
+        class="p-1.5 rounded-lg text-slate-500 hover:text-[var(--c-text-1)] hover:bg-[var(--c-hover)] transition-colors shrink-0"
         title="Back to roles"
       >
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -180,7 +180,7 @@ async function toggleMember(userId: string) {
 
       <!-- Name + badges -->
       <div class="flex items-center gap-2 flex-1 min-w-0">
-        <span class="text-base font-semibold text-slate-100 truncate">{{ role.name }}</span>
+        <span class="text-base font-semibold text-[var(--c-text-3)] truncate">{{ role.name }}</span>
         <span
           v-if="role.isAdmin"
           class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-400 shrink-0"
@@ -195,7 +195,7 @@ async function toggleMember(userId: string) {
           'text-xs px-2.5 py-1 rounded-lg border transition-colors shrink-0 disabled:opacity-40',
           role.isAdmin
             ? 'border-blue-500/30 text-blue-400 hover:border-red-500/40 hover:text-red-400'
-            : 'border-slate-700/50 text-slate-500 hover:border-blue-500/40 hover:text-blue-400',
+            : 'border-[var(--c-border-strong)] text-slate-500 hover:border-blue-500/40 hover:text-blue-400',
         ]"
       >{{ role.isAdmin ? 'Revoke admin' : 'Grant admin' }}</button>
 
@@ -220,7 +220,7 @@ async function toggleMember(userId: string) {
         >Yes</button>
         <button
           @click="deleteConfirm = false"
-          class="text-xs px-2 py-1 rounded text-slate-500 hover:text-slate-300 transition-colors"
+          class="text-xs px-2 py-1 rounded text-slate-500 hover:text-[var(--c-text-2)] transition-colors"
         >No</button>
       </template>
     </div>
@@ -262,7 +262,7 @@ async function toggleMember(userId: string) {
             'flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer select-none transition-colors',
             grantedNames.has(perm.name)
               ? 'bg-emerald-500/8 hover:bg-emerald-500/12'
-              : 'hover:bg-slate-800/50',
+              : 'hover:bg-[var(--c-hover)]',
           ]"
         >
           <!-- Checkbox -->
@@ -272,7 +272,7 @@ async function toggleMember(userId: string) {
               permBusy[perm.name] ? 'opacity-40' : '',
               grantedNames.has(perm.name)
                 ? 'bg-emerald-600 border-emerald-600'
-                : 'border-slate-700 hover:border-slate-500',
+                : 'border-[var(--c-border-strong)] hover:border-[var(--c-border-strong)]',
             ]"
           >
             <svg
@@ -286,7 +286,7 @@ async function toggleMember(userId: string) {
 
           <!-- Permission name + description -->
           <div class="flex-1 min-w-0 flex items-baseline gap-2.5">
-            <code class="text-xs font-mono text-slate-300 shrink-0">{{ perm.name }}</code>
+            <code class="text-xs font-mono text-[var(--c-text-2)] shrink-0">{{ perm.name }}</code>
             <span class="text-xs text-slate-600 truncate">{{ perm.desc }}</span>
           </div>
         </div>
@@ -300,7 +300,7 @@ async function toggleMember(userId: string) {
         <span class="text-xs text-slate-700">{{ sortedUsers.filter(u => userHasRole(u)).length }} / {{ users.length }}</span>
       </div>
 
-      <div class="divide-y divide-slate-800/40 border border-slate-800/60 rounded-xl overflow-hidden">
+      <div class="divide-y divide-[var(--c-border)] border border-[var(--c-border)] rounded-xl overflow-hidden">
 
         <div v-if="users.length === 0" class="px-4 py-3 text-xs text-slate-600 italic">No users</div>
 
@@ -309,7 +309,7 @@ async function toggleMember(userId: string) {
           :key="user.id"
           :class="[
             'flex items-center gap-3 px-4 py-2.5 transition-colors',
-            userHasRole(user) ? 'bg-[#0e1420]' : 'bg-[#0a0a14]',
+            userHasRole(user) ? 'bg-[var(--c-surface-alt)]' : 'bg-[var(--c-surface-alt)]',
           ]"
         >
           <!-- Avatar -->
@@ -323,7 +323,7 @@ async function toggleMember(userId: string) {
           <!-- Name -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-1.5">
-              <span :class="['text-sm font-medium truncate', userHasRole(user) ? 'text-slate-200' : 'text-slate-500']">
+              <span :class="['text-sm font-medium truncate', userHasRole(user) ? 'text-[var(--c-text-1)]' : 'text-slate-500']">
                 {{ user.username }}
               </span>
               <span v-if="user.id === currentUserId" class="text-[10px] text-slate-600">(you)</span>
@@ -338,7 +338,7 @@ async function toggleMember(userId: string) {
               :disabled="user.id === currentUserId || memberBusy[user.id]"
               @click="user.id !== currentUserId && toggleMember(user.id)"
               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
-                     text-slate-500 border border-slate-700/50
+                     text-slate-500 border border-[var(--c-border-strong)]
                      hover:text-red-400 hover:border-red-500/40 hover:bg-red-900/15
                      disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
@@ -352,7 +352,7 @@ async function toggleMember(userId: string) {
               :disabled="memberBusy[user.id]"
               @click="toggleMember(user.id)"
               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
-                     text-slate-600 border border-slate-700/40
+                     text-slate-600 border border-[var(--c-border-strong)]
                      hover:text-blue-400 hover:border-blue-500/40 hover:bg-blue-600/10
                      disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >

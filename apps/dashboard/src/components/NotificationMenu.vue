@@ -87,7 +87,7 @@ function notifBorderColor(type: Notification['type']): string {
     case 'success':  return 'border-green-800/40'
     case 'error':    return 'border-red-800/40'
     case 'info':     return 'border-blue-800/40'
-    default:         return 'border-slate-700/50'
+    default:         return 'border-[var(--c-border-strong)]'
   }
 }
 </script>
@@ -105,7 +105,7 @@ function notifBorderColor(type: Notification['type']): string {
     <Transition name="nm">
       <div
         v-if="open"
-        class="fixed z-50 w-80 bg-[#0d0d1f] border border-slate-700/60 rounded-xl shadow-2xl flex flex-col overflow-hidden"
+        class="fixed z-50 w-80 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-xl shadow-2xl flex flex-col overflow-hidden"
         :style="{
           bottom: pos.bottom + 'px',
           left:   pos.left + 'px',
@@ -114,11 +114,11 @@ function notifBorderColor(type: Notification['type']): string {
         @click.stop
       >
         <!-- Header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800/60 flex-shrink-0">
-          <span class="text-sm font-semibold text-slate-200">Activity</span>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-[var(--c-border)] flex-shrink-0">
+          <span class="text-sm font-semibold text-[var(--c-text-1)]">Activity</span>
           <button
             @click="$emit('close')"
-            class="p-1 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            class="p-1 rounded-lg text-slate-500 hover:text-[var(--c-text-1)] hover:bg-[var(--c-hover)] transition-colors"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -136,10 +136,10 @@ function notifBorderColor(type: Notification['type']): string {
               <div
                 v-for="task in uploads.tasks.value"
                 :key="task.id"
-                class="bg-[#12121e] border border-slate-700/50 rounded-xl px-3 py-2.5"
+                class="bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-xl px-3 py-2.5"
               >
                 <div class="flex items-center justify-between gap-2 mb-1.5">
-                  <span class="text-xs text-slate-300 truncate min-w-0" :title="task.name">{{ task.name }}</span>
+                  <span class="text-xs text-[var(--c-text-2)] truncate min-w-0" :title="task.name">{{ task.name }}</span>
                   <span class="text-[10px] shrink-0 tabular-nums font-medium" :class="uploadStatusColor(task.status)">
                     {{ uploadStatusLabel(task) }}
                   </span>
@@ -156,7 +156,7 @@ function notifBorderColor(type: Notification['type']): string {
                     v-if="task.status === 'uploading' || task.status === 'paused'"
                     @click.stop="toggleStatMode()"
                     :title="statMode === 'throughput' ? 'Switch to chunks' : 'Switch to throughput'"
-                    class="text-[10px] tabular-nums text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                    class="text-[10px] tabular-nums text-slate-500 hover:text-[var(--c-text-2)] transition-colors cursor-pointer"
                   >
                     <template v-if="statMode === 'throughput' && task.status === 'uploading'">
                       {{ formatThroughput(task.bytesPerSec) }}
@@ -173,7 +173,7 @@ function notifBorderColor(type: Notification['type']): string {
                     <button
                       @click="togglePause(task)"
                       :title="task.status === 'uploading' ? 'Pause' : 'Resume'"
-                      class="p-1 rounded text-slate-500 hover:text-slate-200 hover:bg-slate-700 transition-colors"
+                      class="p-1 rounded text-slate-500 hover:text-[var(--c-text-1)] hover:bg-[var(--c-hover)] transition-colors"
                     >
                       <svg v-if="task.status === 'uploading'" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                         <rect x="6" y="4" width="4" height="16" rx="1"/>
@@ -209,7 +209,7 @@ function notifBorderColor(type: Notification['type']): string {
               <div
                 v-for="n in notifications"
                 :key="n.id"
-                class="bg-[#111120] border rounded-xl px-3 py-2.5 flex items-start gap-2.5"
+                class="bg-[var(--c-surface)] border rounded-xl px-3 py-2.5 flex items-start gap-2.5"
                 :class="notifBorderColor(n.type)"
               >
                 <div class="shrink-0 mt-0.5" :class="notifIconColor(n.type)">
@@ -222,7 +222,7 @@ function notifBorderColor(type: Notification['type']): string {
                   </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-xs text-slate-200 leading-snug">{{ n.title }}</p>
+                  <p class="text-xs text-[var(--c-text-1)] leading-snug">{{ n.title }}</p>
                   <p v-if="n.detail" class="text-[10px] text-slate-500 mt-0.5 leading-snug truncate">{{ n.detail }}</p>
                   <div v-if="n.progress != null && n.progress >= 0" class="h-0.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
                     <div class="h-full bg-blue-500 rounded-full transition-all duration-200" :style="{ width: n.progress + '%' }"/>
@@ -230,7 +230,7 @@ function notifBorderColor(type: Notification['type']): string {
                 </div>
                 <button
                   @click="dismiss(n.id)"
-                  class="shrink-0 p-0.5 rounded text-slate-600 hover:text-slate-300 transition-colors"
+                  class="shrink-0 p-0.5 rounded text-slate-600 hover:text-[var(--c-text-2)] transition-colors"
                 >
                   <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -253,7 +253,7 @@ function notifBorderColor(type: Notification['type']): string {
         </div>
 
         <!-- Footer -->
-        <div v-if="notifications.length > 0" class="px-4 py-2.5 border-t border-slate-800/60 flex-shrink-0">
+        <div v-if="notifications.length > 0" class="px-4 py-2.5 border-t border-[var(--c-border)] flex-shrink-0">
           <button
             @click="dismissAll()"
             class="text-xs text-slate-600 hover:text-slate-400 transition-colors"

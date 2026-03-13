@@ -122,18 +122,18 @@ onMounted(async () => {
 
     <template v-else>
       <!-- Add form -->
-      <div v-if="adding" class="rounded-xl border border-blue-500/30 bg-[#111120] p-4 mb-3">
+      <div v-if="adding" class="rounded-xl border border-blue-500/30 bg-[var(--c-surface)] p-4 mb-3">
         <div class="flex gap-3 mb-3">
           <div class="flex-1">
             <label class="block text-xs text-slate-500 mb-1">Name</label>
             <input v-model="newName" type="text" placeholder="Media"
-              class="w-full bg-[#0a0a14] border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100
+              class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm text-[var(--c-text-3)]
                      focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-600"/>
           </div>
           <div class="flex-[2]">
             <label class="block text-xs text-slate-500 mb-1">Path</label>
             <input v-model="newPath" type="text" placeholder="/mnt/data"
-              class="w-full bg-[#0a0a14] border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100
+              class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm text-[var(--c-text-3)]
                      font-mono focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-600"/>
           </div>
         </div>
@@ -145,14 +145,14 @@ onMounted(async () => {
             {{ addLoading ? 'Adding…' : 'Add Place' }}
           </button>
           <button @click="adding = false; addError = ''"
-            class="px-3 py-1.5 text-slate-400 hover:text-slate-200 text-sm transition-colors">
+            class="px-3 py-1.5 text-slate-400 hover:text-[var(--c-text-1)] text-sm transition-colors">
             Cancel
           </button>
         </div>
       </div>
 
       <!-- Empty state -->
-      <div v-if="places.length === 0 && !adding" class="rounded-xl border border-slate-800 bg-[#111120] px-5 py-4">
+      <div v-if="places.length === 0 && !adding" class="rounded-xl border border-[var(--c-border)] bg-[var(--c-surface)] px-5 py-4">
         <p class="text-sm text-slate-600 italic">No places configured yet.</p>
       </div>
 
@@ -161,7 +161,7 @@ onMounted(async () => {
         <div
           v-for="place in places"
           :key="place.id"
-          class="bg-[#111120] border border-slate-800/60 rounded-xl overflow-hidden"
+          class="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl overflow-hidden"
         >
           <!-- Place row -->
           <div class="flex items-center gap-3 px-4 py-3 group">
@@ -170,7 +170,7 @@ onMounted(async () => {
                 <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
               </svg>
               <div class="flex-1 min-w-0">
-                <span class="text-sm text-slate-200">{{ place.name }}</span>
+                <span class="text-sm text-[var(--c-text-1)]">{{ place.name }}</span>
                 <span class="text-slate-600 text-xs font-mono ml-3">{{ place.path }}</span>
               </div>
               <!-- Expand chevron -->
@@ -190,26 +190,26 @@ onMounted(async () => {
           </div>
 
           <!-- Permissions matrix (expanded) -->
-          <div v-if="expandedPlace === place.id" class="border-t border-slate-800/40">
-            <div class="px-4 py-2 bg-[#0d0d1e]">
+          <div v-if="expandedPlace === place.id" class="border-t border-[var(--c-border)]">
+            <div class="px-4 py-2 bg-[var(--c-surface-alt)]">
               <span class="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Permissions</span>
             </div>
             <table class="w-full text-xs">
               <thead>
-                <tr class="text-slate-600 uppercase tracking-wider border-b border-slate-800/40 bg-[#0d0d1e]">
+                <tr class="text-slate-600 uppercase tracking-wider border-b border-[var(--c-border)] bg-[var(--c-surface-alt)]">
                   <th class="px-4 py-2 text-left font-medium">Subject</th>
                   <th class="px-3 py-2 text-center font-medium w-16">Read</th>
                   <th class="px-3 py-2 text-center font-medium w-16">Write</th>
                   <th class="px-3 py-2 text-center font-medium w-16">Delete</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-800/30">
+              <tbody class="divide-y divide-[var(--c-border)]">
                 <!-- Roles (personal roles hidden — users are listed individually below) -->
                 <tr v-for="role in visibleRoles" :key="'role-' + role.id">
                   <td class="px-4 py-2.5">
                     <div class="flex items-center gap-1.5">
                       <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-500/15 text-violet-400">role</span>
-                      <span class="text-slate-300">{{ role.name }}</span>
+                      <span class="text-[var(--c-text-2)]">{{ role.name }}</span>
                     </div>
                   </td>
                   <td v-for="field in (['canRead', 'canWrite', 'canDelete'] as const)" :key="field" class="px-3 py-2.5 text-center">
@@ -225,7 +225,7 @@ onMounted(async () => {
                   <td class="px-4 py-2.5">
                     <div class="flex items-center gap-1.5">
                       <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700/60 text-slate-400">user</span>
-                      <span class="text-slate-300">{{ user.username }}</span>
+                      <span class="text-[var(--c-text-2)]">{{ user.username }}</span>
                     </div>
                   </td>
                   <td v-for="field in (['canRead', 'canWrite', 'canDelete'] as const)" :key="field" class="px-3 py-2.5 text-center">

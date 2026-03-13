@@ -26,7 +26,7 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[#0f0f1a]">
+  <div class="min-h-screen flex items-center justify-center bg-[var(--c-bg)]">
     <div class="w-full max-w-sm">
       <div class="text-center mb-8">
         <div class="text-4xl font-bold tracking-widest text-blue-400 mb-1">NASX</div>
@@ -35,7 +35,7 @@ async function handleLogin() {
 
       <form
         @submit.prevent="handleLogin"
-        class="bg-[#1e1e30] border border-slate-700 rounded-xl p-8 shadow-2xl"
+        class="bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-xl p-8 shadow-2xl"
       >
         <div class="mb-5">
           <label class="block text-slate-400 text-xs uppercase tracking-wider mb-2">
@@ -45,7 +45,7 @@ async function handleLogin() {
             v-model="username"
             type="text"
             autocomplete="username"
-            class="w-full bg-[#12121f] border border-slate-600 rounded-lg px-4 py-2.5 text-slate-100
+            class="w-full bg-[var(--c-bg)] border border-[var(--c-border-strong)] rounded-lg px-4 py-2.5 text-[var(--c-text-3)]
                    focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-600"
             placeholder="admin"
           />
@@ -59,7 +59,7 @@ async function handleLogin() {
             v-model="password"
             type="password"
             autocomplete="current-password"
-            class="w-full bg-[#12121f] border border-slate-600 rounded-lg px-4 py-2.5 text-slate-100
+            class="w-full bg-[var(--c-bg)] border border-[var(--c-border-strong)] rounded-lg px-4 py-2.5 text-[var(--c-text-3)]
                    focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-600"
             placeholder="••••••••"
           />

@@ -269,11 +269,11 @@ async function save() {
 <template>
   <Teleport to="body">
     <div class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" @click.self="emit('close')">
-      <div class="bg-[#111120] border border-slate-700/60 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div class="bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
 
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-          <h2 class="text-base font-semibold text-slate-100">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-[var(--c-border)]">
+          <h2 class="text-base font-semibold text-[var(--c-text-3)]">
             {{ editApp ? 'Edit App' : 'New App' }}
           </h2>
           <div class="flex items-center gap-2">
@@ -284,7 +284,7 @@ async function save() {
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
                 showCompose
                   ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/70',
+                  : 'text-slate-500 hover:text-[var(--c-text-2)] hover:bg-[var(--c-hover)]',
               ]"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -292,7 +292,7 @@ async function save() {
               </svg>
               Import Compose
             </button>
-            <button @click="emit('close')" class="text-slate-500 hover:text-slate-300 transition-colors">
+            <button @click="emit('close')" class="text-slate-500 hover:text-[var(--c-text-2)] transition-colors">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -301,7 +301,7 @@ async function save() {
         </div>
 
         <!-- Tabs -->
-        <div class="flex border-b border-slate-800 px-6 overflow-x-auto">
+        <div class="flex border-b border-[var(--c-border)] px-6 overflow-x-auto">
           <button
             v-for="tab in tabs" :key="tab.id"
             @click="activeTab = tab.id"
@@ -309,32 +309,32 @@ async function save() {
               'px-3 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
               activeTab === tab.id
                 ? 'border-blue-500 text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-300',
+                : 'border-transparent text-slate-500 hover:text-[var(--c-text-2)]',
             ]"
           >{{ tab.label }}</button>
         </div>
 
         <!-- Compose import panel -->
-        <div v-if="showCompose" class="px-6 py-4 border-b border-slate-800 bg-[#0a0a14]/60 space-y-3">
+        <div v-if="showCompose" class="px-6 py-4 border-b border-[var(--c-border)] bg-[var(--c-surface-alt)]/60 space-y-3">
           <p class="text-xs text-slate-500">Paste a <span class="font-mono">compose.yml</span> to auto-fill the form.</p>
           <textarea
             v-model="composeRaw"
             placeholder="version: '3.8'&#10;services:&#10;  app:&#10;    image: nginx:alpine&#10;    ports:&#10;      - '8080:80'"
             rows="8"
-            class="w-full bg-[#060610] border border-slate-700/60 rounded-lg px-3 py-2 text-xs font-mono text-slate-300 focus:outline-none focus:border-blue-500/60 resize-none"
+            class="w-full bg-[var(--c-surface-deep)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--c-text-2)] focus:outline-none focus:border-blue-500/60 resize-none"
           />
           <div class="flex items-center gap-3">
             <div v-if="composeServices.length > 1" class="flex items-center gap-2 flex-1">
               <label class="text-xs text-slate-400 whitespace-nowrap">Service:</label>
               <select
                 v-model="composeSelectedService"
-                class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+                class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
               >
                 <option v-for="s in composeServices" :key="s" :value="s">{{ s }}</option>
               </select>
             </div>
             <div v-else-if="composeServices.length === 1" class="flex-1 text-xs text-slate-500">
-              Service: <span class="font-mono text-slate-300">{{ composeServices[0] }}</span>
+              Service: <span class="font-mono text-[var(--c-text-2)]">{{ composeServices[0] }}</span>
             </div>
             <div v-else class="flex-1" />
             <p v-if="composeError" class="text-xs text-red-400 mr-2">{{ composeError }}</p>
@@ -357,22 +357,22 @@ async function save() {
               <label class="text-xs font-medium text-slate-400 uppercase tracking-wide">Container name *</label>
               <input
                 v-model="form.name" placeholder="my-app" :disabled="!!editApp"
-                class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60 disabled:opacity-50"
+                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60 disabled:opacity-50"
               />
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-medium text-slate-400 uppercase tracking-wide">Image *</label>
               <input
                 v-model="form.image" placeholder="nginx:alpine"
-                class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-3 py-2 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
               />
             </div>
             <!-- Sidebar pin URL -->
-            <div class="space-y-1.5 pt-3 border-t border-slate-800/50">
+            <div class="space-y-1.5 pt-3 border-t border-[var(--c-border)]">
               <label class="text-xs font-medium text-slate-400 uppercase tracking-wide">URL sidebar (optional)</label>
               <input
                 v-model="form.pinnedUrl" placeholder="http://192.168.1.x:8080"
-                class="w-full bg-[#0a0a14] border border-slate-700/60 rounded-lg px-3 py-2 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
               />
               <p class="text-xs text-slate-600">Pins the app in the sidebar if set.</p>
             </div>
@@ -400,7 +400,7 @@ async function save() {
               <input
                 v-model="networkInput" placeholder="network-name"
                 @keydown.enter.prevent="addNetwork"
-                class="flex-1 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm font-mono text-slate-200 focus:outline-none focus:border-blue-500/60"
+                class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
               />
               <button
                 @click="addNetwork"
@@ -432,13 +432,13 @@ async function save() {
         </div>
 
         <!-- Footer -->
-        <div class="px-6 py-4 border-t border-slate-800 flex items-center justify-between">
+        <div class="px-6 py-4 border-t border-[var(--c-border)] flex items-center justify-between">
           <p v-if="error" class="text-sm text-red-400">{{ error }}</p>
           <div v-else />
           <div class="flex gap-2">
             <button
               @click="emit('close')"
-              class="px-4 py-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
+              class="px-4 py-2 text-sm text-slate-400 hover:text-[var(--c-text-1)] transition-colors"
             >Cancel</button>
             <button
               @click="save" :disabled="loading || !form.name || !form.image"

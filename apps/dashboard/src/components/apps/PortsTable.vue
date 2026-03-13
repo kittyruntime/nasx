@@ -31,19 +31,19 @@ function update(i: number, field: keyof PortMapping, val: string | number) {
         type="number" placeholder="Host" min="1" max="65535"
         :value="port.hostPort"
         @input="update(i, 'hostPort', +($event.target as HTMLInputElement).value)"
-        class="w-24 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+        class="w-24 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
       />
       <span class="text-slate-500 text-sm">:</span>
       <input
         type="number" placeholder="Container" min="1" max="65535"
         :value="port.containerPort"
         @input="update(i, 'containerPort', +($event.target as HTMLInputElement).value)"
-        class="w-24 bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+        class="w-24 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
       />
       <select
         :value="port.protocol"
         @change="update(i, 'protocol', ($event.target as HTMLSelectElement).value)"
-        class="bg-[#0a0a14] border border-slate-700/60 rounded-lg px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60"
+        class="bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
       >
         <option value="tcp">TCP</option>
         <option value="udp">UDP</option>
