@@ -23,7 +23,7 @@ const { notifications, dismiss } = useNotifications()
             <!-- Icon -->
             <div class="mt-0.5 shrink-0">
               <!-- Spinner -->
-              <svg v-if="n.type === 'progress'" class="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+              <svg v-if="n.type === 'progress'" class="w-4 h-4 text-[var(--c-accent)] animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
               </svg>
@@ -65,11 +65,11 @@ const { notifications, dismiss } = useNotifications()
           <div v-if="n.type === 'progress'" class="h-0.5 rounded-full bg-slate-800 overflow-hidden">
             <div
               v-if="n.progress === -1 || n.progress == null"
-              class="h-full w-1/3 rounded-full bg-blue-500 animate-[slide_1.2s_ease-in-out_infinite]"
+              class="h-full w-1/3 rounded-full bg-[var(--c-accent)] animate-[slide_1.2s_ease-in-out_infinite]"
             />
             <div
               v-else
-              class="h-full rounded-full bg-blue-500 transition-all duration-300"
+              class="h-full rounded-full bg-[var(--c-accent)] transition-all duration-300"
               :style="{ width: n.progress + '%' }"
             />
           </div>

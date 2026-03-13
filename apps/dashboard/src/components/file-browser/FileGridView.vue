@@ -33,7 +33,7 @@ function fileExt(name: string): string {
       @mousedown.shift.prevent
       :class="[
         'group relative flex flex-col items-center gap-1.5 px-2 pt-3 pb-2.5 rounded-xl transition-colors cursor-pointer select-none',
-        selected.has(entry.path) ? 'bg-blue-600/20 ring-1 ring-blue-500/40' : 'hover:bg-[var(--c-hover)]',
+        selected.has(entry.path) ? 'bg-[var(--c-accent-subtle)] ring-1 ring-[var(--c-accent)]' : 'hover:bg-[var(--c-hover)]',
       ]"
     >
       <!-- Checkbox -->
@@ -41,7 +41,7 @@ function fileExt(name: string): string {
         @click.stop="emit('selectEntry', entry, $event)"
         :class="['absolute top-1.5 left-1.5 w-4 h-4 rounded border flex items-center justify-center transition-all',
           selected.has(entry.path)
-            ? 'opacity-100 bg-blue-500 border-blue-500'
+            ? 'opacity-100 bg-[var(--c-accent)] border-[var(--c-accent)]'
             : 'opacity-0 group-hover:opacity-60 border-[var(--c-border-strong)] bg-slate-900/80']">
         <svg v-if="selected.has(entry.path)" class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -49,7 +49,7 @@ function fileExt(name: string): string {
       </div>
 
       <!-- Icon -->
-      <svg v-if="entry.type === 'dir'" class="w-11 h-11 text-blue-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+      <svg v-if="entry.type === 'dir'" class="w-11 h-11 text-[var(--c-accent)] shrink-0" fill="currentColor" viewBox="0 0 24 24">
         <path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z"/>
       </svg>
       <div v-else class="w-11 h-11 relative flex items-center justify-center flex-shrink-0">
@@ -72,7 +72,7 @@ function fileExt(name: string): string {
           @blur="emit('cancelRename')"
           @focus="($event.target as HTMLInputElement).select()"
           autofocus
-          class="text-xs bg-[var(--c-bg)] border border-blue-500/60 rounded px-1.5 py-0.5 text-[var(--c-text-1)] focus:outline-none w-full text-center"
+          class="text-xs bg-[var(--c-bg)] border border-[var(--c-accent)] rounded px-1.5 py-0.5 text-[var(--c-text-1)] focus:outline-none w-full text-center"
         />
       </template>
       <template v-else>

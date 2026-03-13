@@ -159,7 +159,7 @@ onMounted(load)
       <button
         v-if="canManageUsers && !addingUser"
         @click="openAdd"
-        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-colors"
+        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-[var(--c-accent)] hover:opacity-90 text-[var(--c-accent-fg)] text-xs font-medium rounded-lg transition-colors"
       >
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -169,29 +169,29 @@ onMounted(load)
     </div>
 
     <!-- ── Add user form ── -->
-    <div v-if="addingUser" class="border border-blue-500/30 bg-[var(--c-surface-alt)] rounded-xl p-4 space-y-3">
+    <div v-if="addingUser" class="border border-[var(--c-border-strong)] bg-[var(--c-surface-alt)] rounded-xl p-4 space-y-3">
       <h4 class="text-xs font-semibold text-[var(--c-text-2)] uppercase tracking-widest">New user</h4>
 
       <div class="grid grid-cols-2 gap-2.5">
         <div>
           <label class="block text-xs text-slate-500 mb-1">Username <span class="text-red-400">*</span></label>
           <input v-model="newUser.username" placeholder="johndoe" autofocus
-            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
         </div>
         <div>
           <label class="block text-xs text-slate-500 mb-1">Display name</label>
           <input v-model="newUser.displayName" placeholder="John Doe"
-            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
         </div>
         <div>
           <label class="block text-xs text-slate-500 mb-1">Password <span class="text-red-400">*</span></label>
           <input v-model="newUser.password" type="password" placeholder="Min. 6 chars"
-            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
         </div>
         <div>
           <label class="block text-xs text-slate-500 mb-1">Confirm password <span class="text-red-400">*</span></label>
           <input v-model="newUser.confirmPassword" type="password" placeholder="Repeat password"
-            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
         </div>
       </div>
 
@@ -199,7 +199,7 @@ onMounted(load)
 
       <div class="flex items-center gap-2">
         <button @click="submitAdd" :disabled="addLoading || !newUser.username || !newUser.password"
-          class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors">
+          class="px-3 py-1.5 bg-[var(--c-accent)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-[var(--c-accent-fg)] text-sm font-medium rounded-lg transition-colors">
           {{ addLoading ? 'Creating…' : 'Create user' }}
         </button>
         <button @click="cancelAdd" class="px-3 py-1.5 text-slate-500 hover:text-[var(--c-text-1)] text-sm transition-colors">
@@ -251,7 +251,7 @@ onMounted(load)
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="text-[var(--c-text-1)] font-medium">{{ user.username }}</span>
                       <span v-if="user.id === currentUserId" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-700/60 text-slate-400">you</span>
-                      <span v-if="userIsAdmin(user)" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-400">admin</span>
+                      <span v-if="userIsAdmin(user)" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[var(--c-accent-subtle)] text-[var(--c-accent)]">admin</span>
                       <span v-if="!userIsAdmin(user) && userCanManage(user)" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-500/15 text-violet-400">manager</span>
                     </div>
                     <div v-if="user.displayName" class="text-xs text-slate-500 truncate">{{ user.displayName }}</div>
@@ -309,7 +309,7 @@ onMounted(load)
 
             <!-- Edit form row (expands inline below the row) -->
             <tr v-if="editingUserId === user.id" :key="user.id + '-edit'">
-              <td :colspan="canManageUsers ? 5 : 4" class="px-5 py-4 bg-[var(--c-surface-alt)] border-t border-blue-500/20">
+              <td :colspan="canManageUsers ? 5 : 4" class="px-5 py-4 bg-[var(--c-surface-alt)] border-t border-[var(--c-border)]">
                 <div class="space-y-3">
                   <h5 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">
                     Editing {{ editingUser?.username }}
@@ -319,12 +319,12 @@ onMounted(load)
                     <div>
                       <label class="block text-xs text-slate-500 mb-1">Display name</label>
                       <input v-model="editForm.displayName" placeholder="Full name"
-                        class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+                        class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
                     </div>
                     <div>
                       <label class="block text-xs text-slate-500 mb-1">Linux username</label>
                       <input v-model="editForm.linuxUsername" placeholder="linux_user" class="font-mono
-                        w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+                        w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
                     </div>
                   </div>
 
@@ -332,7 +332,7 @@ onMounted(load)
 
                   <div class="flex items-center gap-2">
                     <button @click="submitEdit" :disabled="editLoading"
-                      class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors">
+                      class="px-3 py-1.5 bg-[var(--c-accent)] hover:opacity-90 disabled:opacity-40 text-[var(--c-accent-fg)] text-sm font-medium rounded-lg transition-colors">
                       {{ editLoading ? 'Saving…' : 'Save' }}
                     </button>
                     <button @click="cancelEdit" class="px-3 py-1.5 text-slate-500 hover:text-[var(--c-text-1)] text-sm transition-colors">

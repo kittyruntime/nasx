@@ -59,7 +59,7 @@ async function deleteNetwork(id: string) {
       <h3 class="text-sm font-semibold text-[var(--c-text-1)]">Networks</h3>
       <button
         @click="adding = !adding"
-        class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-500 transition-colors"
+        class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--c-accent)] text-[var(--c-accent-fg)] text-sm rounded-lg hover:opacity-90 transition-colors"
       >
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -74,12 +74,12 @@ async function deleteNetwork(id: string) {
         <div class="space-y-1.5">
           <label class="text-xs text-slate-400">Name *</label>
           <input v-model="form.name" placeholder="my-network"
-            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60" />
+            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]" />
         </div>
         <div class="space-y-1.5">
           <label class="text-xs text-slate-400">Driver</label>
           <select v-model="form.driver"
-            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60">
+            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]">
             <option>bridge</option>
             <option>overlay</option>
             <option>host</option>
@@ -90,19 +90,19 @@ async function deleteNetwork(id: string) {
         <div class="space-y-1.5">
           <label class="text-xs text-slate-400">Subnet CIDR</label>
           <input v-model="form.subnet" placeholder="172.20.0.0/16"
-            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60" />
+            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]" />
         </div>
         <div class="space-y-1.5">
           <label class="text-xs text-slate-400">Gateway</label>
           <input v-model="form.gateway" placeholder="172.20.0.1"
-            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60" />
+            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]" />
         </div>
       </div>
       <p v-if="addError" class="text-xs text-red-400">{{ addError }}</p>
       <div class="flex justify-end gap-2">
         <button @click="adding = false" class="px-3 py-1.5 text-sm text-slate-400 hover:text-[var(--c-text-1)] transition-colors">Cancel</button>
         <button @click="addNetwork" :disabled="addLoading || !form.name"
-          class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors">
+          class="px-3 py-1.5 text-sm bg-[var(--c-accent)] text-[var(--c-accent-fg)] rounded-lg hover:opacity-90 disabled:opacity-50 transition-colors">
           {{ addLoading ? 'Creating…' : 'Create' }}
         </button>
       </div>

@@ -271,12 +271,12 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
                 >
                   <defs>
                     <linearGradient id="cpu-grad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>
-                      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+                      <stop offset="0%" stop-color="var(--c-accent)" stop-opacity="0.25"/>
+                      <stop offset="100%" stop-color="var(--c-accent)" stop-opacity="0"/>
                     </linearGradient>
                   </defs>
                   <path :d="spark(cpuHist, 0, 100).area" fill="url(#cpu-grad)"/>
-                  <path :d="spark(cpuHist, 0, 100).line" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                  <path :d="spark(cpuHist, 0, 100).line" fill="none" stroke="var(--c-accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
                 </svg>
               </div>
             </div>
@@ -318,7 +318,7 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
                     <span class="text-sm font-mono text-[var(--c-text-1)]">{{ metrics ? fmtBytes(metrics.network.rx) : '—' }}</span>
                   </div>
                   <div class="flex items-center gap-1.5">
-                    <span class="text-[10px] font-semibold text-blue-400 uppercase tracking-widest">↑ tx</span>
+                    <span class="text-[10px] font-semibold text-[var(--c-accent)] uppercase tracking-widest">↑ tx</span>
                     <span class="text-sm font-mono text-[var(--c-text-1)]">{{ metrics ? fmtBytes(metrics.network.tx) : '—' }}</span>
                   </div>
                 </div>
@@ -348,7 +348,7 @@ onUnmounted(() => document.removeEventListener('click', onDocClick))
                     <path
                       v-if="txHist.length >= 2"
                       :d="spark(txHist).line"
-                      fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"
+                      fill="none" stroke="var(--c-accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"
                     />
                   </svg>
                 </div>

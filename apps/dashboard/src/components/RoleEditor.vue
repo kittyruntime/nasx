@@ -183,7 +183,7 @@ async function toggleMember(userId: string) {
         <span class="text-base font-semibold text-[var(--c-text-3)] truncate">{{ role.name }}</span>
         <span
           v-if="role.isAdmin"
-          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-400 shrink-0"
+          class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[var(--c-accent-subtle)] text-[var(--c-accent)] shrink-0"
         >admin</span>
       </div>
 
@@ -194,8 +194,8 @@ async function toggleMember(userId: string) {
         :class="[
           'text-xs px-2.5 py-1 rounded-lg border transition-colors shrink-0 disabled:opacity-40',
           role.isAdmin
-            ? 'border-blue-500/30 text-blue-400 hover:border-red-500/40 hover:text-red-400'
-            : 'border-[var(--c-border-strong)] text-slate-500 hover:border-blue-500/40 hover:text-blue-400',
+            ? 'border-[var(--c-border-strong)] text-[var(--c-accent)] hover:border-red-500/40 hover:text-red-400'
+            : 'border-[var(--c-border-strong)] text-slate-500 hover:border-[var(--c-accent)] hover:text-[var(--c-accent)]',
         ]"
       >{{ role.isAdmin ? 'Revoke admin' : 'Grant admin' }}</button>
 
@@ -234,7 +234,7 @@ async function toggleMember(userId: string) {
       <!-- Admin notice -->
       <div
         v-if="role.isAdmin"
-        class="px-3 py-2.5 rounded-xl bg-blue-500/8 border border-blue-500/15 text-xs text-blue-400"
+        class="px-3 py-2.5 rounded-xl bg-[var(--c-accent-subtle)] border border-[var(--c-border-strong)] text-xs text-[var(--c-accent)]"
       >
         Admin roles have implicit access to all resources — explicit permissions are ignored.
       </div>
@@ -315,7 +315,7 @@ async function toggleMember(userId: string) {
           <!-- Avatar -->
           <div :class="[
             'w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0',
-            userHasRole(user) ? 'bg-blue-600/25 text-blue-300' : 'bg-slate-800 text-slate-500',
+            userHasRole(user) ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]' : 'bg-slate-800 text-slate-500',
           ]">
             {{ user.username.slice(0, 2).toUpperCase() }}
           </div>
@@ -353,7 +353,7 @@ async function toggleMember(userId: string) {
               @click="toggleMember(user.id)"
               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
                      text-slate-600 border border-[var(--c-border-strong)]
-                     hover:text-blue-400 hover:border-blue-500/40 hover:bg-blue-600/10
+                     hover:text-[var(--c-accent)] hover:border-[var(--c-accent)] hover:bg-[var(--c-accent-subtle)]
                      disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

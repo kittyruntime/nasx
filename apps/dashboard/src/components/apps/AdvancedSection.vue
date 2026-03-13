@@ -45,20 +45,20 @@ function removeCap(field: 'capAdd' | 'capDrop', cap: string) {
       <div class="flex flex-wrap gap-1.5 mb-2">
         <span
           v-for="cap in modelValue.capAdd" :key="cap"
-          class="inline-flex items-center gap-1 text-xs bg-blue-600/15 text-blue-300 border border-blue-500/20 rounded px-2 py-0.5"
+          class="inline-flex items-center gap-1 text-xs bg-[var(--c-accent-subtle)] text-[var(--c-accent)] border border-[var(--c-border-strong)] rounded px-2 py-0.5"
         >
           {{ cap }}
-          <button @click="removeCap('capAdd', cap)" class="hover:text-blue-100 transition-colors">×</button>
+          <button @click="removeCap('capAdd', cap)" class="hover:opacity-60 transition-colors">×</button>
         </span>
       </div>
       <div class="flex gap-2">
         <input
           v-model="capAddInput" placeholder="NET_ADMIN" @keydown.enter.prevent="addCap('capAdd', capAddInput as any)"
-          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
         <button
           @click="addCap('capAdd', capAddInput as any)"
-          class="px-3 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg text-sm hover:bg-blue-600/30 transition-colors"
+          class="px-3 py-1.5 bg-[var(--c-accent-subtle)] text-[var(--c-accent)] rounded-lg text-sm hover:opacity-80 transition-colors"
         >Add</button>
       </div>
     </div>
@@ -78,7 +78,7 @@ function removeCap(field: 'capAdd' | 'capDrop', cap: string) {
       <div class="flex gap-2">
         <input
           v-model="capDropInput" placeholder="ALL" @keydown.enter.prevent="addCap('capDrop', capDropInput as any)"
-          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
         <button
           @click="addCap('capDrop', capDropInput as any)"
@@ -93,7 +93,7 @@ function removeCap(field: 'capAdd' | 'capDrop', cap: string) {
       <select
         :value="modelValue.restartPolicy"
         @change="update('restartPolicy', ($event.target as HTMLSelectElement).value)"
-        class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+        class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
       >
         <option value="no">No</option>
         <option value="always">Always</option>
@@ -109,7 +109,7 @@ function removeCap(field: 'capAdd' | 'capDrop', cap: string) {
         <input
           :value="modelValue.hostname ?? ''" placeholder="my-container"
           @input="update('hostname', ($event.target as HTMLInputElement).value || null)"
-          class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
       </div>
       <div class="space-y-1.5">
@@ -117,7 +117,7 @@ function removeCap(field: 'capAdd' | 'capDrop', cap: string) {
         <input
           :value="modelValue.user ?? ''" placeholder="1000:1000"
           @input="update('user', ($event.target as HTMLInputElement).value || null)"
-          class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
       </div>
     </div>
@@ -126,7 +126,7 @@ function removeCap(field: 'capAdd' | 'capDrop', cap: string) {
       <input
         :value="modelValue.command ?? ''" placeholder="/bin/sh -c 'echo hello'"
         @input="update('command', ($event.target as HTMLInputElement).value || null)"
-        class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+        class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
       />
     </div>
 
@@ -138,7 +138,7 @@ function removeCap(field: 'capAdd' | 'capDrop', cap: string) {
           type="number" min="0" max="64" step="0.1"
           :value="modelValue.cpuLimit ?? ''" placeholder="e.g. 0.5"
           @input="update('cpuLimit', ($event.target as HTMLInputElement).value ? +($event.target as HTMLInputElement).value : null)"
-          class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
       </div>
       <div class="space-y-1.5">
@@ -146,7 +146,7 @@ function removeCap(field: 'capAdd' | 'capDrop', cap: string) {
         <input
           :value="modelValue.memoryLimit ?? ''" placeholder="e.g. 512m, 2g"
           @input="update('memoryLimit', ($event.target as HTMLInputElement).value || null)"
-          class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
       </div>
     </div>

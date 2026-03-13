@@ -1,12 +1,21 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useAuth } from '../lib/auth'
+import { useAccent, type Accent } from '../lib/theme'
 import ProfileSection from './ProfileSection.vue'
 import UserListPanel from './UserListPanel.vue'
 import PlacesSection from './PlacesSection.vue'
 import RolesSection from './RolesSection.vue'
 
 const { isAdmin, canManageUsers } = useAuth()
+const { accent, setAccent } = useAccent()
+
+const ACCENT_OPTIONS: { value: Accent; color: string; label: string }[] = [
+  { value: 'orange', color: '#f97316', label: 'Orange' },
+  { value: 'blue',   color: '#3b82f6', label: 'Blue'   },
+  { value: 'green',  color: '#22c55e', label: 'Green'  },
+  { value: 'purple', color: '#a855f7', label: 'Purple' },
+]
 
 type SectionId = 'profile' | 'users' | 'places' | 'roles'
 
@@ -51,14 +60,14 @@ watch(() => props.focusSection, s => { if (s) active.value = s })
         <div class="relative flex items-center">
           <span
             v-if="active === item.id"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-blue-500 rounded-r-full"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[var(--c-accent)] rounded-r-full"
           />
           <button
             @click="active = item.id"
             :class="[
               'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left',
               active === item.id
-                ? 'bg-blue-600/10 text-blue-300'
+                ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]'
                 : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
@@ -83,6 +92,25 @@ watch(() => props.focusSection, s => { if (s) active.value = s })
         </div>
 
       </template>
+
+      <!-- Accent picker -->
+      <div class="mt-auto px-3 pb-4">
+        <div class="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-2">Accent</div>
+        <div class="flex items-center gap-1.5">
+          <button
+            v-for="opt in ACCENT_OPTIONS"
+            :key="opt.value"
+            @click="setAccent(opt.value)"
+            :title="opt.label"
+            :style="{ backgroundColor: opt.color }"
+            :class="[
+              'w-5 h-5 rounded-full transition-all',
+              accent === opt.value ? 'ring-2 ring-offset-2 ring-offset-[var(--c-sidebar)] ring-[var(--c-accent)]' : 'opacity-70 hover:opacity-100',
+            ]"
+          />
+        </div>
+      </div>
+
     </nav>
 
     <!-- ── Content area ───────────────────────────────────────────────── -->

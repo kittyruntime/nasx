@@ -173,7 +173,7 @@ async function unpin(app: App) {
       <h3 class="text-sm font-semibold text-[var(--c-text-1)]">Apps</h3>
       <button
         @click="openNew"
-        class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-500 transition-colors"
+        class="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--c-accent)] text-[var(--c-accent-fg)] text-sm rounded-lg hover:opacity-90 transition-colors"
       >
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -192,7 +192,7 @@ async function unpin(app: App) {
           <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
         </svg>
         <p class="text-sm">No apps yet.</p>
-        <button @click="openNew" class="text-sm text-blue-400 hover:text-blue-300 transition-colors">Create your first app →</button>
+        <button @click="openNew" class="text-sm text-[var(--c-accent)] hover:opacity-80 transition-colors">Create your first app →</button>
       </div>
 
       <template v-else>
@@ -247,7 +247,7 @@ async function unpin(app: App) {
                   <span class="font-mono text-[var(--c-text-3)] text-[13px] font-medium">{{ app.name }}</span>
                   <svg
                     v-if="app.pinnedUrl"
-                    class="w-3 h-3 text-blue-500 flex-shrink-0"
+                    class="w-3 h-3 text-[var(--c-accent)] flex-shrink-0"
                     fill="currentColor" viewBox="0 0 24 24"
                   >
                     <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
@@ -305,7 +305,7 @@ async function unpin(app: App) {
                       @click="runAction(app.id, 'restart')"
                       :disabled="!!actionLoading[app.id]"
                       title="Restart"
-                      class="px-2 py-1.5 text-slate-400 hover:text-blue-400 hover:bg-[var(--c-hover)] disabled:opacity-30 transition-colors"
+                      class="px-2 py-1.5 text-slate-400 hover:text-[var(--c-accent)] hover:bg-[var(--c-hover)] disabled:opacity-30 transition-colors"
                     >
                       <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -319,7 +319,7 @@ async function unpin(app: App) {
                     :title="app.pinnedUrl ? 'Unpin from quick access' : 'Pin to quick access'"
                     :class="[
                       'p-1.5 rounded-lg transition-colors hover:bg-[var(--c-hover)]',
-                      app.pinnedUrl ? 'text-blue-400 hover:text-slate-400' : 'text-slate-500 hover:text-[var(--c-text-2)]',
+                      app.pinnedUrl ? 'text-[var(--c-accent)] hover:text-slate-400' : 'text-slate-500 hover:text-[var(--c-text-2)]',
                     ]"
                   >
                     <svg class="w-3.5 h-3.5" :fill="app.pinnedUrl ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -376,7 +376,7 @@ async function unpin(app: App) {
       <div class="bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-xl shadow-2xl w-full max-w-sm p-5 space-y-4">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-semibold text-[var(--c-text-1)]">
-            Pin <span class="font-mono text-blue-400">{{ pinDialog.name }}</span> to quick access
+            Pin <span class="font-mono text-[var(--c-accent)]">{{ pinDialog.name }}</span> to quick access
           </h3>
           <button @click="pinDialog = null" class="text-slate-500 hover:text-[var(--c-text-2)] transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -392,7 +392,7 @@ async function unpin(app: App) {
             @keydown.enter.prevent="savePin"
             @keydown.escape="pinDialog = null"
             autofocus
-            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+            class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
           />
           <p v-if="pinDialogErr" class="text-xs text-red-400">{{ pinDialogErr }}</p>
         </div>
@@ -401,7 +401,7 @@ async function unpin(app: App) {
           <button
             @click="savePin"
             :disabled="pinDialogBusy || !pinDialogUrl.trim()"
-            class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 transition-colors"
+            class="px-3 py-1.5 text-sm bg-[var(--c-accent)] text-[var(--c-accent-fg)] rounded-lg hover:opacity-90 disabled:opacity-50 transition-colors"
           >{{ pinDialogBusy ? 'Saving…' : 'Pin' }}</button>
         </div>
       </div>

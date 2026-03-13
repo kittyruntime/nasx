@@ -108,7 +108,7 @@ onMounted(async () => {
       <button
         v-if="!adding"
         @click="adding = true"
-        class="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+        class="flex items-center gap-1 text-xs text-[var(--c-accent)] hover:opacity-80 transition-colors"
       >
         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -122,26 +122,26 @@ onMounted(async () => {
 
     <template v-else>
       <!-- Add form -->
-      <div v-if="adding" class="rounded-xl border border-blue-500/30 bg-[var(--c-surface)] p-4 mb-3">
+      <div v-if="adding" class="rounded-xl border border-[var(--c-border-strong)] bg-[var(--c-surface)] p-4 mb-3">
         <div class="flex gap-3 mb-3">
           <div class="flex-1">
             <label class="block text-xs text-slate-500 mb-1">Name</label>
             <input v-model="newName" type="text" placeholder="Media"
               class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm text-[var(--c-text-3)]
-                     focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-600"/>
+                     focus:outline-none focus:border-[var(--c-accent)] transition-colors placeholder-slate-600"/>
           </div>
           <div class="flex-[2]">
             <label class="block text-xs text-slate-500 mb-1">Path</label>
             <input v-model="newPath" type="text" placeholder="/mnt/data"
               class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm text-[var(--c-text-3)]
-                     font-mono focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-600"/>
+                     font-mono focus:outline-none focus:border-[var(--c-accent)] transition-colors placeholder-slate-600"/>
           </div>
         </div>
         <div v-if="addError" class="text-red-400 text-xs mb-2">{{ addError }}</div>
         <div class="flex gap-2">
           <button @click="addPlace" :disabled="addLoading || !newName.trim() || !newPath.trim()"
-            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed
-                   text-white text-sm rounded-lg transition-colors">
+            class="px-3 py-1.5 bg-[var(--c-accent)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed
+                   text-[var(--c-accent-fg)] text-sm rounded-lg transition-colors">
             {{ addLoading ? 'Adding…' : 'Add Place' }}
           </button>
           <button @click="adding = false; addError = ''"
@@ -166,7 +166,7 @@ onMounted(async () => {
           <!-- Place row -->
           <div class="flex items-center gap-3 px-4 py-3 group">
             <button @click="togglePlace(place.id)" class="flex-1 flex items-center gap-3 text-left min-w-0">
-              <svg class="w-4 h-4 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-4 h-4 text-[var(--c-accent)] shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
               </svg>
               <div class="flex-1 min-w-0">

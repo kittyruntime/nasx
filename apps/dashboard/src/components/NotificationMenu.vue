@@ -49,7 +49,7 @@ function uploadBarColor(status: UploadTask['status']): string {
     case 'error':     return 'bg-red-500'
     case 'cancelled': return 'bg-slate-600'
     case 'paused':    return 'bg-amber-500'
-    default:          return 'bg-blue-500'
+    default:          return 'bg-[var(--c-accent)]'
   }
 }
 
@@ -59,7 +59,7 @@ function uploadStatusColor(status: UploadTask['status']): string {
     case 'error':     return 'text-red-400'
     case 'cancelled': return 'text-slate-500'
     case 'paused':    return 'text-amber-400'
-    default:          return 'text-blue-400'
+    default:          return 'text-[var(--c-accent)]'
   }
 }
 
@@ -86,7 +86,7 @@ function notifBorderColor(type: Notification['type']): string {
   switch (type) {
     case 'success':  return 'border-green-800/40'
     case 'error':    return 'border-red-800/40'
-    case 'info':     return 'border-blue-800/40'
+    case 'info':     return 'border-[var(--c-border-strong)]'
     default:         return 'border-[var(--c-border-strong)]'
   }
 }
@@ -225,7 +225,7 @@ function notifBorderColor(type: Notification['type']): string {
                   <p class="text-xs text-[var(--c-text-1)] leading-snug">{{ n.title }}</p>
                   <p v-if="n.detail" class="text-[10px] text-slate-500 mt-0.5 leading-snug truncate">{{ n.detail }}</p>
                   <div v-if="n.progress != null && n.progress >= 0" class="h-0.5 bg-slate-800 rounded-full mt-1.5 overflow-hidden">
-                    <div class="h-full bg-blue-500 rounded-full transition-all duration-200" :style="{ width: n.progress + '%' }"/>
+                    <div class="h-full bg-[var(--c-accent)] rounded-full transition-all duration-200" :style="{ width: n.progress + '%' }"/>
                   </div>
                 </div>
                 <button

@@ -149,7 +149,7 @@ async function save() {
                 <input
                   v-model="owner"
                   class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-3)]
-                         font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                         font-mono focus:outline-none focus:border-[var(--c-accent)] transition-colors"
                 />
               </div>
               <div>
@@ -157,7 +157,7 @@ async function save() {
                 <input
                   v-model="group"
                   class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-3)]
-                         font-mono focus:outline-none focus:border-blue-500 transition-colors"
+                         font-mono focus:outline-none focus:border-[var(--c-accent)] transition-colors"
                 />
               </div>
             </div>
@@ -174,7 +174,7 @@ async function save() {
             <button
               @click="save"
               :disabled="saving"
-              class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors"
+              class="px-4 py-1.5 bg-[var(--c-accent)] hover:opacity-90 disabled:opacity-40 text-[var(--c-accent-fg)] text-sm font-medium rounded-lg transition-colors"
             >
               {{ saving ? 'Applying…' : 'Apply' }}
             </button>

@@ -34,7 +34,7 @@ function update(i: number, field: keyof VolumeMount, val: string) {
         <select
           :value="vol.type"
           @change="update(i, 'type', ($event.target as HTMLSelectElement).value)"
-          class="bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         >
           <option value="bind">Bind</option>
           <option value="named">Named</option>
@@ -47,21 +47,21 @@ function update(i: number, field: keyof VolumeMount, val: string) {
           v-if="vol.type === 'bind'"
           :value="vol.source" placeholder="/host/path"
           @input="update(i, 'source', ($event.target as HTMLInputElement).value)"
-          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
         <!-- named: nom du volume container -->
         <input
           v-else-if="vol.type === 'named'"
           :value="vol.source" placeholder="my-volume"
           @input="update(i, 'source', ($event.target as HTMLInputElement).value)"
-          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
         <!-- place: select parmi les Places -->
         <select
           v-else
           :value="vol.source"
           @change="update(i, 'source', ($event.target as HTMLSelectElement).value)"
-          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         >
           <option value="">— select place —</option>
           <option v-for="pl in places" :key="pl.id" :value="pl.id">{{ pl.name }}</option>
@@ -73,7 +73,7 @@ function update(i: number, field: keyof VolumeMount, val: string) {
         <input
           :value="vol.target" placeholder="/container/path"
           @input="update(i, 'target', ($event.target as HTMLInputElement).value)"
-          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+          class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
         />
 
         <button @click="remove(i)" class="p-1.5 text-slate-500 hover:text-red-400 transition-colors shrink-0">
@@ -94,7 +94,7 @@ function update(i: number, field: keyof VolumeMount, val: string) {
 
     <button
       @click="add"
-      class="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+      class="flex items-center gap-1.5 text-sm text-[var(--c-accent)] hover:opacity-80 transition-colors"
     >
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>

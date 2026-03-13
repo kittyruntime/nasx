@@ -29,7 +29,7 @@ async function handleLogin() {
   <div class="min-h-screen flex items-center justify-center bg-[var(--c-bg)]">
     <div class="w-full max-w-sm">
       <div class="text-center mb-8">
-        <div class="text-4xl font-bold tracking-widest text-blue-400 mb-1">NASX</div>
+        <div class="text-4xl font-bold tracking-widest text-[var(--c-accent)] mb-1">NASX</div>
         <div class="text-slate-500 text-sm">Network Attached Storage</div>
       </div>
 
@@ -46,7 +46,7 @@ async function handleLogin() {
             type="text"
             autocomplete="username"
             class="w-full bg-[var(--c-bg)] border border-[var(--c-border-strong)] rounded-lg px-4 py-2.5 text-[var(--c-text-3)]
-                   focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-600"
+                   focus:outline-none focus:border-[var(--c-accent)] transition-colors placeholder-slate-600"
             placeholder="admin"
           />
         </div>
@@ -60,7 +60,7 @@ async function handleLogin() {
             type="password"
             autocomplete="current-password"
             class="w-full bg-[var(--c-bg)] border border-[var(--c-border-strong)] rounded-lg px-4 py-2.5 text-[var(--c-text-3)]
-                   focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-600"
+                   focus:outline-none focus:border-[var(--c-accent)] transition-colors placeholder-slate-600"
             placeholder="••••••••"
           />
         </div>
@@ -72,8 +72,8 @@ async function handleLogin() {
         <button
           type="submit"
           :disabled="loading"
-          class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed
-                 text-white font-medium rounded-lg py-2.5 transition-colors"
+          class="w-full bg-[var(--c-accent)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+                 text-[var(--c-accent-fg)] font-medium rounded-lg py-2.5 transition-colors"
         >
           {{ loading ? 'Signing in…' : 'Sign In' }}
         </button>

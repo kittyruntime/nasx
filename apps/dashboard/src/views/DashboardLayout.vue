@@ -107,7 +107,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
     <aside class="flex flex-col items-center w-16 bg-[var(--c-sidebar)] border-r border-[var(--c-border)] py-4 flex-shrink-0">
 
       <!-- Brand mark -->
-      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold mb-5 tracking-wider select-none">
+      <div class="w-8 h-8 rounded-lg bg-[var(--c-accent)] flex items-center justify-center text-[var(--c-accent-fg)] text-[10px] font-bold mb-5 tracking-wider select-none">
         NX
       </div>
 
@@ -120,7 +120,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         <div class="relative flex justify-center py-0.5">
           <span
             v-if="isActive('dashboard')"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-blue-500 rounded-r-full"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[var(--c-accent)] rounded-r-full"
           />
           <button
             @click="selectApp('dashboard')"
@@ -128,7 +128,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
             :class="[
               'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
               isActive('dashboard')
-                ? 'bg-blue-600/15 text-blue-400'
+                ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]'
                 : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
@@ -142,7 +142,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         <div class="relative flex justify-center py-0.5">
           <span
             v-if="isActive('files')"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-blue-500 rounded-r-full"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[var(--c-accent)] rounded-r-full"
           />
           <button
             @click="selectApp('files')"
@@ -150,7 +150,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
             :class="[
               'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
               isActive('files')
-                ? 'bg-blue-600/15 text-blue-400'
+                ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]'
                 : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
@@ -164,7 +164,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         <div class="relative flex justify-center py-0.5">
           <span
             v-if="isActive('apps')"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-blue-500 rounded-r-full"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[var(--c-accent)] rounded-r-full"
           />
           <button
             @click="selectApp('apps')"
@@ -172,7 +172,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
             :class="[
               'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
               isActive('apps')
-                ? 'bg-blue-600/15 text-blue-400'
+                ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]'
                 : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
@@ -186,7 +186,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         <div class="relative flex justify-center py-0.5">
           <span
             v-if="isActive('settings')"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-blue-500 rounded-r-full"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-[var(--c-accent)] rounded-r-full"
           />
           <button
             @click="selectApp('settings')"
@@ -194,7 +194,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
             :class="[
               'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
               isActive('settings')
-                ? 'bg-blue-600/15 text-blue-400'
+                ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]'
                 : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
             ]"
           >
@@ -237,7 +237,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         title="Activity"
         class="relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150 mb-2"
         :class="notifMenuOpen
-          ? 'bg-blue-600/15 text-blue-400'
+          ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]'
           : 'text-slate-500 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]'"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
@@ -245,7 +245,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         </svg>
         <span
           v-if="badgeCount > 0"
-          class="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 bg-blue-500 rounded-full text-[8px] font-bold text-white flex items-center justify-center tabular-nums leading-none"
+          class="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 bg-[var(--c-accent)] rounded-full text-[8px] font-bold text-[var(--c-accent-fg)] flex items-center justify-center tabular-nums leading-none"
         >{{ badgeCount > 9 ? '9+' : badgeCount }}</span>
       </button>
 
@@ -254,10 +254,10 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
         ref="avatarRef"
         @click.stop="toggleUserMenu"
         title="Account"
-        class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center
+        class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center
                justify-center text-white text-xs font-bold select-none transition-all duration-150"
         :class="userMenuOpen
-          ? 'ring-2 ring-blue-400/60 ring-offset-2 ring-offset-[var(--c-sidebar)]'
+          ? 'ring-2 ring-[var(--c-accent)] ring-offset-2 ring-offset-[var(--c-sidebar)]'
           : 'hover:ring-2 hover:ring-slate-600/80 hover:ring-offset-2 hover:ring-offset-[var(--c-sidebar)]'"
       >
         {{ initials }}
@@ -278,7 +278,7 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
           }"
         >
           <div class="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--c-border)]">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {{ initials }}
             </div>
             <div class="min-w-0">

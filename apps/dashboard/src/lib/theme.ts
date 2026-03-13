@@ -30,3 +30,35 @@ export function useTheme() {
   }
   return { theme, cycle }
 }
+
+// ── Accent ────────────────────────────────────────────────────────────────────
+
+export type Accent = 'orange' | 'blue' | 'green' | 'purple'
+
+const ACCENT_KEY = 'nasx-accent'
+
+function readAccent(): Accent {
+  const v = localStorage.getItem(ACCENT_KEY)
+  if (v === 'blue' || v === 'green' || v === 'purple') return v
+  return 'orange'
+}
+
+const accent = ref<Accent>(readAccent())
+
+watchEffect(() => {
+  const html = document.documentElement
+  if (accent.value === 'orange') {
+    html.removeAttribute('data-accent')
+    localStorage.removeItem(ACCENT_KEY)
+  } else {
+    html.setAttribute('data-accent', accent.value)
+    localStorage.setItem(ACCENT_KEY, accent.value)
+  }
+})
+
+export function useAccent() {
+  function setAccent(value: Accent) {
+    accent.value = value
+  }
+  return { accent, setAccent }
+}

@@ -283,7 +283,7 @@ async function save() {
               :class="[
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
                 showCompose
-                  ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
+                  ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)] hover:opacity-80'
                   : 'text-slate-500 hover:text-[var(--c-text-2)] hover:bg-[var(--c-hover)]',
               ]"
             >
@@ -308,7 +308,7 @@ async function save() {
             :class="[
               'px-3 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors',
               activeTab === tab.id
-                ? 'border-blue-500 text-blue-400'
+                ? 'border-[var(--c-accent)] text-[var(--c-accent)]'
                 : 'border-transparent text-slate-500 hover:text-[var(--c-text-2)]',
             ]"
           >{{ tab.label }}</button>
@@ -321,14 +321,14 @@ async function save() {
             v-model="composeRaw"
             placeholder="version: '3.8'&#10;services:&#10;  app:&#10;    image: nginx:alpine&#10;    ports:&#10;      - '8080:80'"
             rows="8"
-            class="w-full bg-[var(--c-surface-deep)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--c-text-2)] focus:outline-none focus:border-blue-500/60 resize-none"
+            class="w-full bg-[var(--c-surface-deep)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-xs font-mono text-[var(--c-text-2)] focus:outline-none focus:border-[var(--c-accent)] resize-none"
           />
           <div class="flex items-center gap-3">
             <div v-if="composeServices.length > 1" class="flex items-center gap-2 flex-1">
               <label class="text-xs text-slate-400 whitespace-nowrap">Service:</label>
               <select
                 v-model="composeSelectedService"
-                class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+                class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
               >
                 <option v-for="s in composeServices" :key="s" :value="s">{{ s }}</option>
               </select>
@@ -341,7 +341,7 @@ async function save() {
             <button
               @click="importCompose"
               :disabled="!composeRaw.trim()"
-              class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+              class="px-3 py-1.5 text-sm bg-[var(--c-accent)] text-[var(--c-accent-fg)] rounded-lg hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
             >
               Import &amp; fill form
             </button>
@@ -357,14 +357,14 @@ async function save() {
               <label class="text-xs font-medium text-slate-400 uppercase tracking-wide">Container name *</label>
               <input
                 v-model="form.name" placeholder="my-app" :disabled="!!editApp"
-                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60 disabled:opacity-50"
+                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)] disabled:opacity-50"
               />
             </div>
             <div class="space-y-1.5">
               <label class="text-xs font-medium text-slate-400 uppercase tracking-wide">Image *</label>
               <input
                 v-model="form.image" placeholder="nginx:alpine"
-                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
               />
             </div>
             <!-- Sidebar pin URL -->
@@ -372,7 +372,7 @@ async function save() {
               <label class="text-xs font-medium text-slate-400 uppercase tracking-wide">URL sidebar (optional)</label>
               <input
                 v-model="form.pinnedUrl" placeholder="http://192.168.1.x:8080"
-                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+                class="w-full bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-3 py-2 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
               />
               <p class="text-xs text-slate-600">Pins the app in the sidebar if set.</p>
             </div>
@@ -400,20 +400,20 @@ async function save() {
               <input
                 v-model="networkInput" placeholder="network-name"
                 @keydown.enter.prevent="addNetwork"
-                class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-blue-500/60"
+                class="flex-1 bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-lg px-2 py-1.5 text-sm font-mono text-[var(--c-text-1)] focus:outline-none focus:border-[var(--c-accent)]"
               />
               <button
                 @click="addNetwork"
-                class="px-3 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg text-sm hover:bg-blue-600/30 transition-colors"
+                class="px-3 py-1.5 bg-[var(--c-accent-subtle)] text-[var(--c-accent)] rounded-lg text-sm hover:opacity-80 transition-colors"
               >Add</button>
             </div>
             <div class="flex flex-wrap gap-1.5">
               <span
                 v-for="n in form.networkNames" :key="n"
-                class="inline-flex items-center gap-1 text-xs bg-blue-600/15 text-blue-300 border border-blue-500/20 rounded px-2 py-0.5 font-mono"
+                class="inline-flex items-center gap-1 text-xs bg-[var(--c-accent-subtle)] text-[var(--c-accent)] border border-[var(--c-border-strong)] rounded px-2 py-0.5 font-mono"
               >
                 {{ n }}
-                <button @click="form.networkNames = form.networkNames.filter(x => x !== n)" class="hover:text-blue-100 ml-1">×</button>
+                <button @click="form.networkNames = form.networkNames.filter(x => x !== n)" class="hover:opacity-60 ml-1">×</button>
               </span>
               <span v-if="form.networkNames.length === 0" class="text-xs text-slate-600">No networks attached.</span>
             </div>
@@ -442,7 +442,7 @@ async function save() {
             >Cancel</button>
             <button
               @click="save" :disabled="loading || !form.name || !form.image"
-              class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="px-4 py-2 text-sm bg-[var(--c-accent)] text-[var(--c-accent-fg)] rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {{ loading ? 'Saving…' : 'Save' }}
             </button>

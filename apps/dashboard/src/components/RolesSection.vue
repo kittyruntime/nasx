@@ -95,7 +95,7 @@ onMounted(load)
             <span class="text-sm font-medium text-[var(--c-text-1)] truncate">{{ role.name }}</span>
             <span
               v-if="role.isAdmin"
-              class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-400 shrink-0"
+              class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[var(--c-accent-subtle)] text-[var(--c-accent)] shrink-0"
             >admin</span>
             <span
               v-if="isPersonal(role)"
@@ -111,7 +111,7 @@ onMounted(load)
             <button
               @click="openEditor(role)"
               class="text-xs px-2.5 py-1 rounded-lg border border-[var(--c-border-strong)] text-slate-500
-                     hover:border-blue-500/40 hover:text-blue-400 transition-colors"
+                     hover:border-[var(--c-accent)] hover:text-[var(--c-accent)] transition-colors"
             >Edit</button>
           </div>
         </div>
@@ -123,13 +123,13 @@ onMounted(load)
           v-model="newRoleName"
           placeholder="New role name…"
           class="flex-1 bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)]
-                 placeholder-slate-600 focus:outline-none focus:border-blue-500/60"
+                 placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"
         />
         <button
           type="submit"
           :disabled="!newRoleName.trim()"
-          class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed
-                 text-white text-sm font-medium rounded-lg transition-colors"
+          class="px-4 py-1.5 bg-[var(--c-accent)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed
+                 text-[var(--c-accent-fg)] text-sm font-medium rounded-lg transition-colors"
         >Add</button>
       </form>
       <p v-if="createError" class="text-red-400 text-xs px-0.5">{{ createError }}</p>

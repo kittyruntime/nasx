@@ -22,7 +22,7 @@ defineEmits<{ select: [place: Place] }>()
         :class="[
           'flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left text-sm transition-colors',
           activePlaceId === place.id
-            ? 'bg-blue-600/15 text-blue-300'
+            ? 'bg-[var(--c-accent-subtle)] text-[var(--c-accent)]'
             : 'text-slate-400 hover:bg-[var(--c-hover)] hover:text-[var(--c-text-1)]',
         ]"
       >

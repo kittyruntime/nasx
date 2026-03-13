@@ -135,7 +135,7 @@ onMounted(async () => {
               {{ me.displayName || me.username }}
             </span>
             <span v-if="me.displayName" class="text-slate-500 text-sm">{{ me.username }}</span>
-            <span v-if="meIsAdmin" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/15 text-blue-400">admin</span>
+            <span v-if="meIsAdmin" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[var(--c-accent-subtle)] text-[var(--c-accent)]">admin</span>
             <span v-if="!meIsAdmin && meCanManage" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-500/15 text-violet-400">manager</span>
           </div>
           <!-- Roles -->
@@ -168,19 +168,19 @@ onMounted(async () => {
           <span v-if="nameSuccess" class="text-xs text-green-400">Saved</span>
         </div>
 
-        <div v-else class="bg-[var(--c-surface-alt)] border border-blue-500/30 rounded-xl p-4 space-y-3">
+        <div v-else class="bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-xl p-4 space-y-3">
           <input
             v-model="nameValue"
             placeholder="Your full name"
             autofocus
             @keydown.enter="saveName"
             @keydown.escape="editingName = false"
-            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"
+            class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"
           />
           <p v-if="nameError" class="text-red-400 text-xs">{{ nameError }}</p>
           <div class="flex gap-2">
             <button @click="saveName" :disabled="nameLoading"
-              class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors">
+              class="px-3 py-1.5 bg-[var(--c-accent)] hover:opacity-90 disabled:opacity-40 text-[var(--c-accent-fg)] text-sm font-medium rounded-lg transition-colors">
               {{ nameLoading ? 'Saving…' : 'Save' }}
             </button>
             <button @click="editingName = false"
@@ -205,7 +205,7 @@ onMounted(async () => {
           <span class="text-slate-600 text-sm tracking-widest select-none">••••••••</span>
         </div>
 
-        <div v-else class="bg-[var(--c-surface-alt)] border border-blue-500/30 rounded-xl p-4 space-y-3">
+        <div v-else class="bg-[var(--c-surface-alt)] border border-[var(--c-border-strong)] rounded-xl p-4 space-y-3">
           <div v-if="pwSuccess" class="flex items-center gap-2 text-green-400 text-sm py-1">
             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
@@ -217,25 +217,25 @@ onMounted(async () => {
             <div>
               <label class="block text-xs text-slate-500 mb-1">Current password</label>
               <input v-model="pwForm.current" type="password" placeholder="••••••••" autofocus
-                class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+                class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
             </div>
             <div class="grid grid-cols-2 gap-2.5">
               <div>
                 <label class="block text-xs text-slate-500 mb-1">New password</label>
                 <input v-model="pwForm.next" type="password" placeholder="Min. 6 chars"
-                  class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+                  class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
               </div>
               <div>
                 <label class="block text-xs text-slate-500 mb-1">Confirm</label>
                 <input v-model="pwForm.confirm" type="password" placeholder="Repeat"
                   @keydown.enter="submitPassword"
-                  class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-blue-500/60"/>
+                  class="w-full bg-[var(--c-surface)] border border-[var(--c-border-strong)] rounded-lg px-3 py-1.5 text-sm text-[var(--c-text-1)] placeholder-slate-600 focus:outline-none focus:border-[var(--c-accent)]"/>
               </div>
             </div>
             <p v-if="pwError" class="text-red-400 text-xs">{{ pwError }}</p>
             <div class="flex gap-2">
               <button @click="submitPassword" :disabled="pwLoading || !pwForm.current || !pwForm.next"
-                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors">
+                class="px-3 py-1.5 bg-[var(--c-accent)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-[var(--c-accent-fg)] text-sm font-medium rounded-lg transition-colors">
                 {{ pwLoading ? 'Saving…' : 'Update password' }}
               </button>
               <button @click="pwOpen = false"

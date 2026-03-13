@@ -390,11 +390,11 @@ onMounted(async () => {
       >
         <!-- Drag overlay -->
         <div v-if="dragOver && currentPath"
-          class="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 bg-blue-950/60 border-2 border-dashed border-blue-400/50 rounded pointer-events-none select-none">
-          <svg class="w-10 h-10 text-blue-400 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          class="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 bg-[var(--c-accent-subtle)] border-2 border-dashed border-[var(--c-accent)] rounded pointer-events-none select-none">
+          <svg class="w-10 h-10 text-[var(--c-accent)] opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
           </svg>
-          <span class="text-sm text-blue-300 font-medium">Drop to upload</span>
+          <span class="text-sm text-[var(--c-accent)] font-medium">Drop to upload</span>
         </div>
 
         <!-- Loading -->
@@ -541,7 +541,7 @@ onMounted(async () => {
           Upload
         </button>
         <button v-if="clipboard && currentPath" @click="doPaste(); closeContextMenu()"
-          :class="['ctx-item', clipboard.mode === 'cut' ? 'text-amber-400' : 'text-blue-400']">
+          :class="['ctx-item', clipboard.mode === 'cut' ? 'text-amber-400' : 'text-[var(--c-accent)]']">
           <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>
