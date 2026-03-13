@@ -317,8 +317,8 @@ onUnmounted(() => document.removeEventListener('click', closeUserMenu))
     <!-- Main area -->
     <main class="flex-1 flex flex-col overflow-hidden">
 
-      <!-- Top bar -->
-      <header class="h-11 flex items-center justify-between px-6 border-b border-[var(--c-border)] flex-shrink-0 bg-[var(--c-surface-alt)]/60 backdrop-blur-sm">
+      <!-- Top bar (hidden for files — FileToolbar acts as the header) -->
+      <header v-if="activeApp !== 'files'" class="h-11 flex items-center justify-between px-6 border-b border-[var(--c-border)] flex-shrink-0 bg-[var(--c-surface-alt)]/60 backdrop-blur-sm">
         <span class="text-sm font-medium text-[var(--c-text-2)]">{{ activeAppLabel }}</span>
         <button
           v-if="activeApp === 'apps' && isAdmin"

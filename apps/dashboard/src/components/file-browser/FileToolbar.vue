@@ -32,7 +32,7 @@ const emit = defineEmits<{
 
 <template>
   <div
-    class="flex items-center gap-1.5 px-3 py-2 border-b border-[var(--c-border)] bg-[var(--c-surface-alt)]/40 flex-shrink-0 min-h-[42px]"
+    class="flex items-center gap-1.5 px-3 py-2 border-b border-[var(--c-border)] bg-[var(--c-surface-alt)]/60 backdrop-blur-sm flex-shrink-0 h-11"
     @click.stop
   >
     <!-- Back / Up -->
