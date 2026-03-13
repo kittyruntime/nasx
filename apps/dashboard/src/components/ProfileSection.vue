@@ -2,6 +2,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { trpc } from '../lib/trpc'
 import { useAuth } from '../lib/auth'
+import { useAccent, type Accent } from '../lib/theme'
 
 type Me = {
   id: string
@@ -23,6 +24,15 @@ const meCanManage = computed(() => {
 })
 
 useAuth()
+
+const { accent, setAccent } = useAccent()
+
+const ACCENT_OPTIONS: { value: Accent; color: string; label: string }[] = [
+  { value: 'orange', color: '#f97316', label: 'Orange' },
+  { value: 'blue',   color: '#3b82f6', label: 'Blue'   },
+  { value: 'green',  color: '#22c55e', label: 'Green'  },
+  { value: 'purple', color: '#a855f7', label: 'Purple' },
+]
 
 const me      = ref<Me | null>(null)
 const loading = ref(true)
@@ -244,6 +254,27 @@ onMounted(async () => {
               </button>
             </div>
           </template>
+        </div>
+      </div>
+
+      <!-- ── Accent color ── -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-semibold uppercase tracking-widest text-slate-500">Accent color</h4>
+        <div class="bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl px-4 py-3 flex items-center gap-3">
+          <button
+            v-for="opt in ACCENT_OPTIONS"
+            :key="opt.value"
+            @click="setAccent(opt.value)"
+            :title="opt.label"
+            :style="{ backgroundColor: opt.color }"
+            :class="[
+              'w-6 h-6 rounded-full transition-all',
+              accent === opt.value
+                ? 'ring-2 ring-offset-2 ring-offset-[var(--c-surface)] ring-[var(--c-accent)] scale-110'
+                : 'opacity-60 hover:opacity-100',
+            ]"
+          />
+          <span class="text-xs text-slate-500 ml-1">{{ ACCENT_OPTIONS.find(o => o.value === accent)?.label }}</span>
         </div>
       </div>
 
